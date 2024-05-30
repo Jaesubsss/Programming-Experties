@@ -1,0 +1,5 @@
+function cppman {
+    $keyword = $args[0]
+    $url = "https://linux.die.net/man/3/$keyword"
+    Start-Process "elinks" -ArgumentList $url
+}

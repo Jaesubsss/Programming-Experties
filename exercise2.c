@@ -218,6 +218,34 @@ int sum_nums()
     return sum;
 }
 
+// 2.2.3 Optimal data type
+
+int optdata()
+{
+    // Write a program to calculate the optimal data type (in terms of storage efficiency) for a given integer.
+    // Hint: Use the limits.h header file
+
+    int num;
+    printf("Enter an integer: ");
+    scanf("%d", &num);
+
+    if (num >= CHAR_MIN && num <= CHAR_MAX){
+        printf("The optimal data type for %d is char\n", num);
+    }
+    else if (num >= SHRT_MIN && num <= SHRT_MAX){
+        printf("The optimal data type for %d is short\n", num);
+    }
+    else if (num >= INT_MIN && num <= INT_MAX){
+        printf("The optimal data type for %d is int\n", num);
+    }
+    else if (num >= LONG_MIN && num <= LONG_MAX){
+        printf("The optimal data type for %d is long\n", num);
+    }
+    else{
+        printf("The optimal data type for %d is long long\n", num);
+    }
+
+}
 
 int main(void)
 {
