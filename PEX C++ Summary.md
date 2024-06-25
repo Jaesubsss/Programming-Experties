@@ -2143,3 +2143,442 @@ Formatted Output은 프로그래밍에서 특정 형식에 맞추어 데이터�
         }
         ```
     - `std::format` 함수를 사용하여 포맷 문자열을 생성하고, `std::cout`을 통해 출력한다.
+
+# Lecture 4
+
+## Inheritance
+
+C++ 또한 객체지향 프로그래밍을 지원한다. 따라서 inheritance를 사용할 수 있다. 
+
+Base Class와 Derived Class로 나뉘게 되는데, 아래 예시를 통해 알아보자. 
+
+```cpp
+class A {
+    public:
+        int x;
+    protected:
+        int y;
+    private:
+        int z;
+    };
+class B : public A {
+// x is public
+// y is protected
+// z is not accessible
+};
+class C : protected A {
+// x is protected
+// y is protected
+// z is not accessible
+};
+class D : private A {
+// 'private' is default
+// for classes
+// x is private
+// y is private
+// z is not accessible
+};
+
+```
+
+```cpp
+DerivedClass : public BaseClass {
+// derived class has the same interface as the
+// BaseClass, it can implement more methods.
+};
+DerivedClass : protected BaseClass {
+// class inheriting from DerivedClass has access to
+// all protected/public (now protected) methods of BaseClass
+// objects created from derived class have no!
+// access to methods and properties in BaseClass
+};
+DerivedClass : private BaseClass {
+// class inheriting from DerivedClass has access to
+// all protected/public (now private) methods of BaseClass
+// object created from derived class have no!
+// access to methods and properties in BaseClass
+};
+
+```
+
+C++에서는 Base Class를 public, protected 또는 private로 선언함으로써 이게 어떻게 inherited 될 것인지 컨트롤 할 수 있다. 
+
+Derived Class의 객체는 Base 클래스의 public으로 선언된 모든것들에 접근이 가능하다. 만약 베이스 클래스에서 protected로 선언된 것들이 있다면, derived class의 객체는 일단 접근이 가능하다. 사용은 가능하단 뜻이다. 그러나, 외부 코드나 베이스 클래스의 보호된 멤버에는 직접 접근할 수 없다. 즉, derived 클래스의 객체는 그 객체가 속한 클래스 내에서만 베이스 클래스의 protected member를 사용할 수 있다.
+
+private 멤버의 경우, 애초에 상속이 불가능하며, 클래스 외부에서 접근할 수 없다. 
+
+Animal 클래스의 더 자세한 예시를 보자. 
+
+```cpp
+#include <iostream>
+class Animal {
+public:
+    void run() { std::cout << "Run, run, run!\n"; }
+    void eat() { std::cout << "Eating generic food!\n"; }
+};
+
+class Cat : public Animal {
+public:
+    void meow() {
+        std::cout << "Meow, meow!\n";
+    }
+};
+// we have run automatically as we used: public Animal
+// 자동으로 부모클래스의 run과 eat 함수를 가진다. 
+// 새로운 함수를 추가할 수 있다.
+
+// private inheritance is the default
+// which is different to Python where public is the default
+class Dog : private Animal {
+public:
+    void wuff() {
+        std::cout << "Wuff, wuff!\n";
+    }
+// Animal 클래스를 private로 상속받았기 때문에, 외부에서 run, eat 함수를 호출할 수 없다.
+// we must reimplement run and call Animal::run()
+// by the Dog::run() method
+    void run() {
+        Animal::run(); // Animal 클래스의 run() 메서드 호출
+        // 외부에서 접근이 불가하기 때문에, 이렇게 클래스 내부에서 재 구현 하여 사용해야한다.
+    }
+};
+
+
+int main() {
+    Cat mike = Cat();
+    Dog fido = Dog();
+
+    mike.run();   // Cat 클래스에서 상속받은 run() 메서드 호출
+    mike.eat();   // Animal 클래스에서 상속받은 eat() 메서드 호출
+    mike.meow();  // Cat 클래스의 meow() 메서드 호출
+
+    fido.run();   // Dog 클래스에서 재구현한 run() 메서드 호출
+    // fido.eat(); // 컴파일 오류: private 상속으로 인해 eat() 메서드 접근 불가
+    fido.wuff();  // Dog 클래스의 wuff() 메서드 호출
+}
+```
+
+### Base Class Constructor
+
+```cpp
+#include <iostream>
+#include <string>
+
+class Animal {
+protected:
+    std::string name;
+
+public:
+    Animal(std::string name) { // constructor
+        this->name = name;
+    }
+
+    void run() {
+        std::cout << this->name << " runs! ";
+    }
+};
+
+class Cat : public Animal {
+public:
+    Cat(std::string name) : Animal(name) { } // 부모클래스의 생성자를 불러온다. super.와 비슷하다고 생각하면 될 듯
+
+    void meow() {
+        std::cout << this->name << " says meow!\n";
+    }
+};
+
+int main(int argc, char *argv[]) {
+    Cat micky("Micky");
+
+    micky.run();   // "Micky runs! " 출력
+    micky.meow();  // "Micky says meow!" 출력
+}
+
+```
+
+### Composition
+
+그렇지. Inheritance가 나왔으면 Composition도 있어야겠지? 
+
+Part-of 관계를 가진다. inheritance는 is-a 관계였고. 
+
+객체들간의 강한 소유 관계가 필요할 때 사용한다. 또한, 기본 베이스 클래스에서 다는 필요없고 일부 메서드만 필요한 경우 상속보다는 composition을 통해 필요한 것만 빼올 수 있다. 그냥 import하면 안되나..? 
+
+암튼, 베이스 클래스의 일부 메서드를 외부에 감추고자 할 때나, 여러 구성요소로 메서드를 위임하고자 할때 사용할 수 있다.
+
+파이썬에서의 예시를 보자. 
+
+```python
+class Tail:
+    def wag(self):
+        print('Wag, wag!')
+    class Dog:
+        def __init__(self,name,breed):
+        self.tail=Tail() # component
+        self.name=name
+        self.breed=breed
+        self.confidence=0
+    def chase(self,thing):
+        print(self.name,' chases ',thing)
+        print('Wuff! Wuff!', end=' ')
+        self.tail.wag()
+        self.confidence=self.confidence+1
+    def getConfidence(self):
+        if self.confidence > 3:
+            return('confidence of '+ self.name+' is good!')
+        else:
+            return('confidence of '+ self.name+' is ok!')
+
+fido=Dog('Fido','Australian Shepherd')
+for cat in ['Susi','Kathi', 'Moritz']:
+    fido.chase('cat '+cat)
+print(fido.getConfidence())
+fido.chase('Student Martin')
+print(fido.getConfidence())
+print(fido.tail.wag()) # bad style
+```
+파이썬에선 대충 요런식으로 썻었다. 
+
+C++에서도 사용 방법은 동일하다. 
+
+```cpp
+#include <iostream>
+#include <string>
+class Tail {
+public:
+    void wag () { std::cout << "Wag, wag!" << std::endl; }
+};
+class Dog {
+public:
+    Dog(std::string name, std::string breed);
+    int getConfidence () const { return(confidence); }
+    void chase (std::string thing);
+protected:
+    int confidence = 0;
+    std::string itsName ;
+    std::string itsBreed;
+    Tail itsTail;
+};
+Dog::Dog(std::string name, std::string breed) { // constructor
+    itsName = name;
+    itsBreed=breed;
+    itsTail = Tail(); // composition, dog 클래스의 멤버로 tail 클래스를 가져온다
+                    // 명백한 has-a relationship
+}
+void Dog::chase (std::string thing) {
+    std::cout << itsName << " chases "<<thing<< "!"<<std::endl;
+    itsTail.wag();
+    confidence += 1;
+}
+int main () {
+    Dog fido("Fido PEX XXII","Australian Shepherd");
+    fido.chase("Kathi PEX XXII");
+    std::cout<<"Fido confidence: "<<fido.getConfidence()<<std::endl;}
+```
+
+### Multiple Inharitance
+
+하나의 클래스가 여러개의 다른 클래스로부터 상속을 받을 수 있다. 파이썬에서도 가능했고 했지만, c++에서는 지양되는 방식중 하나이다. 왜냐면 다이아몬드 문제를 일으킬 수 있기 때문이다. 
+
+만약 두개의 클래스 a,b 를 상속받을때, 이 둘 모두 하나의 동일한 클래스 c로부터 상속받는 중이라면, c클래스의 멤버가 중복될 수 있다. 이러면 충돌이 일어난다.
+
+따라서, 이를 해결하기위해 C++에서는 virtual inheritance를 지원한다.
+
+Multiple inheritance를 사용하여 Mixin을 사용할수도 있지만, Multiple inheritance 자체를 사용하는건 되도록이면 지양하자. 
+
+그래도 예시는 보고 가야지?
+```cpp
+#include <iostream>
+using namespace std;
+class Bird {
+public:
+    void fly () {
+    cout << "I believe I can fly ..." << endl;
+    }
+    void beat () { // can't have eat in Bird and Horse
+    cout << "Mhmm, dendrobena ..." << endl; // ?
+    }
+    };
+class Horse {
+public:
+    void run () {
+    cout << "Run, run, run, ..." << endl;
+    }
+    void heat () { // can't have eat in Bird and Horse
+    cout << "Mhmm, apples ..." << endl;
+    }
+};
+class Pegasus : public Bird, public Horse {
+public:
+    void whoami () {
+    cout << "Pegasus" << endl;
+    }
+};
+int main () {
+    Pegasus pegi;
+    pegi.fly();
+    pegi.run();
+    pegi.beat(); // can't have eat in Bird and Horse
+    pegi.heat(); // can't have eat in Bird and Horse
+    pegi.whoami();
+}
+```
+
+### Abstract Class
+
+Abstract class는 위에서 언급한 가상함수를 사용하는 예이다. abstract class는 인터페이스를 정의하게 되는데, 자식 클래스에서 구현될 메서드들의 집합을 먼저 선언하고, 이들 메서드는 인터페이스를 따르는 모든 객체에 대해 동일한 방식으로 호출될 수 있다. 
+
+abstract class는 하나 이상의 pure virtual function를 포함하는데, `virtual` 키워드와 함께 `= 0`으로 정의되는 함수이다. 이 함수는 abstract class 내에서 구현되지 않으며, 파생 자식 클래스에서 반드시 override되어야 한다. 또한, 자식 클래스는 반드시 이것을 정의하고 넘어가야 한다. 이는 프로그램의 일관성을 유지시키며, 템플릿 역할을 수행할 수 있다. 
+
+abstract class는 pure virtual function 외에도 일반적인 멤버 함수나 데이터 멤버를 포함할 수 있다. 이들은 기본적인 동작을 제공하거나, 파생 클래스에서 공통적으로 사용할 수 있는 기능을 제공한다. 
+
+```cpp
+#include <iostream>
+
+// 추상 클래스 Animal 정의
+class Animal {
+public:
+    // 순수 가상 함수 pure virtual function
+    virtual void sound() const = 0;  // 동물의 소리를 출력하는 함수
+    virtual void eat() = 0;          // 동물이 먹이를 먹는 함수
+    
+    // 일반 멤버 함수
+    void sleep() {
+        std::cout << "Animal is sleeping" << std::endl;
+    }
+};
+
+// 추상 클래스 Animal을 상속받는 파생 클래스 Dog 정의
+class Dog : public Animal {
+public:
+    // 순수 가상 함수를 오버라이드하여 구현
+    void sound() const override {
+        std::cout << "Woof!" << std::endl;
+    }
+    void eat() override {
+        std::cout << "Dog is eating bones" << std::endl;
+    }
+};
+
+int main() {
+    // Animal은 추상 클래스이므로 직접 객체를 생성할 수 없음
+    // Animal animal; // 컴파일 오류: 추상 클래스의 객체 생성 불가
+
+    Dog dog;
+    dog.sound();  // Dog 클래스에서 구현한 sound 함수 호출
+    dog.eat();    // Dog 클래스에서 구현한 eat 함수 호출
+    dog.sleep();  // Animal 클래스에서 상속받은 sleep 함수 호출
+
+    return 0;
+}
+```
+
+### Mixin
+
+C++에는 딱히 mixin이라는 기능이 없다. 하지만 multiple inheritance를 사용해서 mixin기능을 흉내낼 수 있다. 
+
+Mixin 클래스의 경우, 일반적으로 인스턴스화되면 안된다. multiple inheritance를 사용하기 때문에 인스턴스화가 될 수 있지만, 하면 안된다. 
+
+
+Mixin 클래스는 다른 클래스에서 필요한 기능을 제공하기 위해 포함될 수 있다. 
+
+예시를 보자!
+
+```cpp
+#include <iostream>
+#include <string>
+
+class Person {
+private:
+    float km = 0;
+public:
+    void eat() { std::cout << "I am eating every day ...!\n"; }
+    void run(float km) {
+        this->km = this->km + km;
+        std::cout << "running " << getKm() << "km!" << std::endl;
+    }
+    int getKm() { return static_cast<int>(this->km); }
+};
+
+class Cat {
+public:
+    void eat() { std::cout << "I am eating mice! \n"; }
+};
+
+class SingerMixin { // Mixin, 메서드가 하나 정의되어있다. 
+protected:
+    std::string song = "Lala, lalalaaaa!\n";
+public:
+    void sing(int n = 1) {
+        for (int i = 0; i < n; i++) {
+            std::cout << song;
+        }
+    }
+};
+
+class SingingPerson : public Person, public SingerMixin { }; // mixin 사용
+
+class SingingCat : public Cat, public SingerMixin { // mixin을 다중상속 받는다. 
+public:
+    SingingCat() { song = "Meow - I love Lasagne!\n"; }
+};
+
+int main() {
+    SingingPerson bob;
+    bob.eat();
+    bob.sing();
+    bob.run(2.5);
+    std::cout << "Bob ran " << bob.getKm() << "km!" << std::endl;
+
+    SingingCat garfield;
+    garfield.eat();
+    garfield.sing(5); // mixin으로 받은 함수를 사용할 수 있다. 
+
+    return 0;
+}
+```
+
+
+### Virtual Functions
+
+코드의 polymorphism을 구현하는 주요 매커니즘 중 하나이다. 이를 사용하면 상속관계에서 동일한 메서드의 이름을 사용하면서 각각의 클래스에 맞는 특정 동작을 구현할 수 있다. 
+
+`virtual` 키워드를 통해 정의될 수 있으며, 파생 클래스에서는 이걸 오버라이딩해서 사용한다. 오버라이딩 할때는 함수 뒤에 `override`라는 키워드를 포함해야하며, **함수의 이름, 매개변수 형식, 반환 유형 또한 동일해야한다.** 
+
+```cpp
+#include <iostream>
+
+class Animal {
+public:
+    void eat() {
+        std::cout << "I'm eating generic food. ";
+    }
+};
+
+class Cat : public Animal {
+public:
+    void eat() { 
+        std::cout << "I'm eating a rat. "; 
+    }
+};
+
+// Function which gets an object as argument!!
+void gomensa(Animal& xyz) { 
+    xyz.eat(); 
+}
+
+int main () {
+    Animal ani = Animal();
+    Cat cat = Cat();
+    
+    ani.eat(); // Outputs: "I'm eating generic food."
+    cat.eat(); // Outputs: "I'm eating a rat."
+    
+    std::cout << std::endl << "But in the mensa: " << std::endl;
+    gomensa(ani);
+    gomensa(cat); // Now it outputs: "I'm eating a rat."
+    
+    return 0;
+}
+
+```
