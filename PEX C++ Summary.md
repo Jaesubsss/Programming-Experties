@@ -2582,3 +2582,805 @@ int main () {
 }
 
 ```
+
+가상함수를 이용하여 다음의 문제를 해결하는 과정을 살펴보도록 하자.
+
+```cpp
+#include <iostream>
+
+class Animal {
+public:
+    void eat() {
+        std::cout << "I'm eating generic food. ";
+    }
+};
+
+class Cat : public Animal {
+public:
+    void eat() {
+        std::cout << "I'm eating a rat. ";
+    }
+};
+void gomensa(Animal xyz) { 
+    xyz.eat(); 
+}
+
+// we add another func for cats' but that is tedious ...
+void gomensa(Cat xyz) { 
+    xyz.eat(); 
+}
+int main() {
+    auto ani = Animal(); // or Animal animal = Animal();
+    auto cat = Cat();
+    
+    ani.eat();
+    cat.eat();
+    
+    std::cout << "Now in the mensa: " << std::endl;
+    
+    gomensa(ani);
+    gomensa(cat);
+}
+```
+
+이 코드에는 문제가 있다. 딱히 문제가 없어 보이지만, 출력을 해보면 알 수 있다. 
+```
+I'm eating generic food. I'm eating a rat. Now in the mensa:
+I'm eating generic food. I'm eating a rat.
+```
+우리는 먼저 `Animal`과 `Cat`클래스의 객체를 하나씩 생성한다. 두 클래스에서는 모두 각각 `eat()`이라는 이름의 함수가 정의되어 있다. Cat의 eat은 Animal로부터 상속받은 것이다. 
+
+우리의 main 함수에서, 우리는 `ani.eat()`과 `cat.eat()`에서 우리가 기대했던대로 각각의 클래스에서 정의된 함수가 잘 작동하는것을 볼 수 있다.
+
+또한, 클래스의 외부에서, 각각 Cat을 받았을때와 Animal을 받았을때 따로따로 각각의 클래스 멤버 함수를 호출하는 함수를 정의했다. 이후 main 함수에서 우리가 `gomensa(ani)`와 `gomensa(cat)`을 호출했을 때, 위 두 함수와 같은 기능을 하길 기대할 수 있다. 
+
+그러나 이것을 하려면 모든 객체의 클래스에 대해 클래스 외부에서 각각 해당하는 클래스 만큼의 추가적인 함수를 정의해야한다는 문제가 있다. 사실 이런게 한두개면 상관이 없는데, 한 대여섯개를 넘어가는 순간 매우 귀찮고 비효율 적인 작업이 될 것이다. 이것을 **virtual function**를 이용한 **dynamic binding**으로 해결할 수 있다. 
+
+첫번째 과정을 보자.
+
+#### Using Pointer and Reference
+
+```cpp
+#include <iostream>
+
+class Animal {
+public:
+    virtual void eat() {
+        std::cout << "I'm eating generic food. ";
+    }
+};
+
+class Cat : public Animal {
+public:
+    void eat() override {
+        std::cout << "I'm eating a rat. ";
+    }
+};
+void gomensa(Animal *xyz) {
+    xyz->eat();
+}
+
+int main() {
+    auto *ani = new Animal();  // Animal 객체의 포인터 생성
+    auto *cat = new Cat();     // Cat 객체의 포인터 생성
+    auto cat2 = Cat();         // Cat 객체 생성 (포인터 아님)
+    
+    ani->eat();   // "I'm eating generic food. "
+    cat->eat();   // "I'm eating a rat. "
+    cat2.eat();   // "I'm eating a rat. "
+    
+    std::cout << std::endl << "Now: " << std::endl;
+    
+    gomensa(ani);      // "I'm eating generic food. "
+    gomensa(cat);      // "I'm eating a rat. "
+    gomensa(&cat2);    // "I'm eating a rat. " (주소를 전달)
+}
+
+```
+```
+I'm eating generic food. I'm eating a rat. I'm eating a rat.
+Now:
+I'm eating generic food. I'm eating a rat. I'm eating a rat.
+```
+
+이 예시에서, 우리는 `gomensa()`함수를 단 하나만 정의했다. 그리고, 이 함수의 파라미터에 우리는 `Animal *xyz`, 즉 포인터를 사용했다. 이 경우, `gomensa`함수는 `Animal`타입의 포인터를 매개변수로 받아, 해당 객체의 `eat()`함수를 호출한다. 포인터를 사용함으로써, 객체의 실제 타입에 따라 올바른 가상함수가 호출된다.
+
+레퍼런스를 사용해서도 구현이 가능하다.
+
+```cpp
+void gomensa(Animal& xyz) { // 참조자로 변경
+    xyz.eat();
+}
+```
+
+#### Using Template and Auto
+
+위의 형태를 Template 혹은 Auto로도 사용할 수 있다. 
+
+```cpp
+#include <iostream>
+
+class Animal {
+public:
+    void eat() {
+        std::cout << "I'm eating generic food. ";
+    }
+};
+
+class Cat : public Animal {
+public:
+    void eat() {
+        std::cout << "I'm eating a rat. ";
+    }
+};
+template <typename T>
+void gomensa(T xyz) {
+    xyz.eat();
+}
+int main() {
+    auto ani = Animal();
+    auto cat = Cat();
+
+    ani.eat();    // "I'm eating generic food. "
+    cat.eat();    // "I'm eating a rat. "
+
+    std::cout << std::endl << "Now: " << std::endl;
+
+    gomensa(ani); // "I'm eating generic food. "
+    gomensa(cat); // "I'm eating a rat. "
+
+    return 0;
+}
+```
+`gomensa(ani)`는 `Animal`객체를 전달하여 템플릿 함수가 `Animal`타입으로 인스턴스화 된다. `gomensa<Animal>(ani)`와 동일하게 동작하며, 제네릭 푸드를 출려한다.
+
+마찬가지로, `gomensa(cat)`은 `Cat`을 전달하여 템플릿 함수가 `Cat`타입으로 인스턴스화 된다. `gomensa<Cat>(cat)`으로 작동한다. 
+
+```cpp
+#include <iostream>
+class Animal {
+public:
+    void eat() {
+        std::cout << "I'm eating generic food. " ;
+    }
+};
+
+class Cat : public Animal {
+public:
+    void eat() { std::cout << "I'm eating a rat. "; }
+};
+
+void gomensa(auto xyz) { xyz.eat(); } // 객체의 클래스에 해당하는 함수를 불러오고, 객체를 자동 인식
+
+int main () {
+    auto ani = Animal();
+    auto cat = Cat();
+    ani.eat();
+    cat.eat();
+    std::cout << std::endl <<"Now: " << std::endl;
+    gomensa(ani);
+    gomensa(cat);
+}
+```
+당연히? auto도 잘 작동한다. auto가 그리고 제일 간단하다. auto 쓰자 그냥. 
+
+## Stylistic rules
+
+스타일리스틱 룰은 일관성있고 가독성 높은 코드를 작성하기 위한 지침이다. 
+
+1. 클래스를 여러개 만들고 싶으면, 클래스 마다 별도의 파일을 작성한다. 또한, 클래스의 이름과 파일 이름을 일치시킨다. 
+2. 소스파일과 헤더파일의 확장자를 다르게 사용한다. 소스파일의 경우 `.cpp`, `.cxx`, `.cc`가 될 것이고, 헤더파일은 `.h`, `.hpp`, `.hxx`가 될 것이다.
+3. 클래스의 이름은 대문자로 시작한다.
+4. 객체의 이름은 소문자로 시작한다. 예) `Animal fido("Fido")`
+5. 긴 이름은 CamelCase 또는 Under_Scores를 사용한다.
+6. 모든 상수는 대문자로 작성한다. 예) `const int MAX_SPEED = 100;`
+7. `#define`의 사용을 피하고, 웬만하면 `const`를 사용한다.
+8. 네임스페이스를 잘 사용하자.
+9. multiple inheritance의 사용을 피한다.
+10. 파일 시작 부분에 라이선스와 작성자 정보를 추가한다.
+
+## Regex
+
+교수님이 사랑해 마지않는, Regex와 CLA의 시간이 돌아왔다. 
+
+C++에서 Regex를 사용하기 위해선, `<regex>`헤더파일이 필요하다. 
+```cpp
+#include <iostream>
+#include <string>
+#include <regex>
+
+using namespace std;
+
+int main(int argc, char **argv) {
+    regex rxFullname("[A-Z][a-z]+ [A-Z][a-z]+");
+    string name;
+    
+    cout << "Enter your full name: " << flush;
+    getline(cin, name);  // 전체 입력 줄을 읽습니다.
+
+    //string name = "Detlef Groth";
+    //cout << "Enter you full name: " << flush;
+    //cin >> name;
+    // cin은 공백을 기준으로 입력을 분리하기 때문에 전체 이름을 제대로 읽지 못한다.
+    // getline을 사용하여 전체 입력 줄을 읽는 것이 권장된다. 
+    
+    if (!regex_match(name, rxFullname)) {
+        cout << "\nError: Name not entered correctly, your name is '" << name << "'??" << endl;
+    } else {
+        cout << "Great, you entered the name correctly as: " << name << endl;
+    }
+    
+    return 0;
+}
+```
+
+자 그러면 다시한번 Regex의 syntax에 대해 차근차근 알아보도록 하자.
+
+- `[]`: 문자 클래스를 나타내며, 대괄호 안에있는 문자 중하나와 일치 하는지를 검사한다. 예를들어 `[abc]`는 a, b, c 중 하나와 일치하는지 검사한다.
+- `.`: 어떤 문자 하나와 일치하는지를 찾는다. `a.`는 `ab`, `ac`등이 될 수 있다.
+- `?`: 직전의 패턴이 없는지 본다.
+- `*`: 직전의 패턴이 있을 수 있다. 0회 이상.. 
+- `+`: 직전의 패턴이 1회 이상 반복된다. 
+- `|`: OR 연산을 나타내며, 왼쪽 또는 오른쪽의 패턴 중 하나와 일치하는지 검사한다.
+- `{}`:반복 횟수를 지정한다. `{n}`은 정확히 n번 반복을 나타내고, `{m,n}`은 최소 m번에서 최대 n번 반복을 나타낸다.
+- `()`: 그룹을 지정한다. 그룹화된 패턴은 후속작업에서 참조할 수 있다. 
+- `\s` 공백, `\t` 탭, `\n` 줄바꿈, `\w` 단어 문자 (소문자, 대문자, 숫자, 밑줄을 포함)
+
+
+Unix/Linux 환경에서 Regex의 이용은 필수이다. 이게없으면 돌아가질 않는다. 
+
+Regex는 보통 `grep`명령어와 자주 함께 쓰이는데, 기본 형식은 다음과 같다.
+
+```bash
+grep [options] pattern [filename(s)]
+```
+여기에 이제 `-E` 옵션을 붙이면 Regex를 사용할 수 있다.
+
+```bash
+grep -E "regex" filename(s)
+```
+이 명령어는 "regex"라는 단어가 포함된 모든 라인을 출력한다. 
+
+`egrep`은 `grep -E`의 축약형으로, 위에 말한 기능을 수행한다. 
+
+아래 사용 예시를 보자. 
+
+1. **“A”**: standard IUPAC one-letter codes
+   - `"A"`는 특정한 IUPAC 아미노산 코드를 나타내며, 여기서는 Alanine (알라닌)을 나타냅니다.
+
+2. **“.”**: position where any aa is accepted
+   - `"."`은 어떤 아미노산이든 허용되는 위치를 나타냅니다. 즉, 어떤 한 문자에 대응됩니다.
+
+3. **“[ALT]”**: ambiguity any of Ala or Leu or Thr
+   - `"[ALT]"`는 Ala (Alanine), Leu (Leucine), Thr (Threonine) 중 하나에 대응됩니다. 즉, 이 위치에서는 이 세 가지 아미노산 중 하나가 올 수 있습니다.
+
+4. **“[^AL]”**: negative ambiguity any aa but not! Ala or Leu.
+   - `"[^AL]"`은 Ala (Alanine) 또는 Leu (Leucine)이 아닌 다른 아미노산을 나타냅니다. 즉, 이 위치에서는 Ala와 Leu를 제외한 다른 아미노산이 올 수 있습니다.
+
+5. **“.{2,4}”**: repetition. two to four amino acids of any type
+   - `".{2,4}"`는 어떤 아미노산이든 2개에서 4개까지의 문자열에 대응됩니다. 즉, 2개 이상 4개 이하의 아미노산이 올 수 있습니다.
+
+6. **“L{3}”**: exactly three Leu
+   - `"L{3}"`은 정확히 세 번의 Leucine (Leu)을 나타냅니다. 따라서 "LLL"과 같은 패턴에 매칭됩니다.
+
+7. **“L{2,4}”**: two to four Leu, why not :)
+   - `"L{2,4}"`는 Leucine (Leu)가 2개에서 4개까지 나타날 수 있는 패턴을 나타냅니다. 따라서 "LL", "LLL", "LLLL"과 같은 패턴에 매칭됩니다.
+
+8. **“+”**: one or more, X+ == X{1,}
+   - `"+"`는 바로 앞의 패턴이 한 번 이상 반복됨을 나타냅니다. 즉, "X+"는 "X"가 한 번 이상 나오는 패턴을 의미합니다.
+
+9. **“*”**: zero or more, X* == X{0,}
+   - `"*"`는 바로 앞의 패턴이 0회 이상 반복됨을 나타냅니다. 즉, "X*"는 "X"가 0회 이상 나오는 패턴을 의미합니다.
+
+10. **“?”**: zero or one, X? == X{0,1}
+    - `"?"`는 바로 앞의 패턴이 0회 또는 1회 나오는지를 나타냅니다. 즉, "X?"는 "X"가 0회 또는 1회 나오는 패턴을 의미합니다.
+
+11. **“^M”**: N terminal Met
+    - `"^M"`은 문자열의 시작 부분에 있는 Met (Methionine)을 나타냅니다. 즉, 문자열이 "M"으로 시작하는지를 검사합니다.
+
+12. **“A$”**: C terminal Ala
+    - `"A$"`은 문자열의 끝 부분에 있는 Ala (Alanine)을 나타냅니다. 즉, 문자열이 "A"로 끝나는지를 검사합니다.
+
+
+### regex functions
+
+Regex를 사용하는데 유용한 functions들이 있다. 이 형태는 파이썬과 비슷하지만 조금 다르므로 자세히 알아보자. 
+
+1. **`std::regex_match`**
+   - **설명**: 문자열 전체가 정규 표현식과 일치하는지 여부를 확인합니다.
+   - **기본 형태**: 
+   - **사용 예시**:
+     ```cpp
+     std::string str = "Hello World";
+     std::regex reg("Hello");
+     if (std::regex_match(str, reg)) {
+         std::cout << "Match found!\n";
+     }
+     ```
+
+2. **`std::regex_search`**
+   - **설명**: 문자열에서 정규 표현식과 일치하는 부분을 찾습니다.
+   - **기본 형태**: `regex_search(string, pattern,flag(s))`
+   - **사용 예시**:
+     ```cpp
+     std::string str = "abc def ghi";
+     std::regex reg("\\b\\w{3}\\b");  // 정규 표현식: 세 글자로 이루어진 단어
+     if (std::regex_search(str, reg)) {
+         std::cout << "Pattern found!\n";
+     }
+     ```
+
+3. **`std::regex_replace`**
+   - **설명**: 문자열에서 정규 표현식과 일치하는 부분을 다른 문자열로 치환합니다.
+   - **기본 형태**: `regex_replace(string, pattern, replace)`
+   - **사용 예시**:
+     ```cpp
+     std::string str = "apple orange banana";
+     std::regex reg("\\b(\\w+)\\b");  // 각 단어를 캡처하는 정규 표현식
+     std::string result = std::regex_replace(str, reg, "fruit");
+     std::cout << result << "\n";  // 출력: "fruit fruit fruit"
+     ```
+
+4. **`std::regex_iterator`**
+   - **설명**: 문자열에서 정규 표현식과 일치하는 모든 부분을 반복적으로 가져오는 반복자를 생성합니다.
+   - **사용 예시**:
+     ```cpp
+     std::string str = "cat dog bird";
+     std::regex reg("\\b\\w+\\b");  // 각 단어를 캡처하는 정규 표현식
+     std::sregex_iterator iter(str.begin(), str.end(), reg);
+     std::sregex_iterator end;
+     while (iter != end) {
+         std::cout << iter->str() << "\n";
+         ++iter;
+     }
+     ```
+
+5. **`std::regex_constants::match_flag_type`**
+   - **설명**: `std::regex_match`와 `std::regex_search` 함수의 매치 동작을 제어하기 위한 상수 타입입니다.
+   - **사용 예시**:
+     ```cpp
+     std::string str = "Hello World";
+     std::regex reg("hello", std::regex_constants::icase);  // 대소문자 구분 없이 검색
+     if (std::regex_search(str, reg)) {
+         std::cout << "Match found!\n";
+     }
+     ```
+
+6. **`std::smatch`**
+   - **설명**: `std::regex_match` 또는 `std::regex_search`에서 매치된 결과를 저장하는 클래스입니다.
+   - **사용 예시**:
+     ```cpp
+     std::string str = "John: 555-1234";
+     std::regex reg("(\\w+): (\\d+-\\d+)");
+     std::smatch match;
+     if (std::regex_search(str, match, reg)) {
+         std::cout << "Name: " << match[1] << ", Phone: " << match[2] << "\n";
+     }
+     ```
+
+
+또한, `grep`함수는 c++에 없지만 정의할 수 있다. 
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <regex>
+#include <string>
+namespace pex {
+    // a C++ grep which works like the R grep
+std::vector<int> grep (std::string pattern, std::string str, const std::regex::flag_type & flag = std::regex::basic) {
+    std::regex rx;
+    rx =std::regex(pattern,flag);
+    std::vector<int> index_matches; // results saved here
+    for(auto it = std::sregex_iterator(str.begin(), str.end(), rx);
+        it != std::sregex_iterator(); ++it) {
+            index_matches.push_back(it->position());
+    }
+    return(index_matches);
+}
+std::vector<int> grep (std::string pattern, std::vector<std::string> vstring, const std::regex::flag_type & flag = std::regex::basic) {
+    std::regex rx;
+    rx =std::regex(pattern,flag);
+    std::vector<int> index_matches = {}; // results saved here
+    int i = 0;
+    for (auto el : vstring) {
+        if (std::regex_search(el,rx)) {
+            index_matches.push_back(i);
+        }
+        i=i+1;
+    }
+    return(index_matches);
+}
+} // END OF NAMESPACE
+
+int main (int argc, char ** argv) {
+    std::vector<int> res = pex::grep("[Hh][ea]", "Hello and hallo world!");
+    for (auto r : res)
+        std::cout << r << std::endl;
+    for (auto i : pex::grep("H[ea]",{"Hello","World!", "Hallo","Welt!","by","hallo"})) {
+        std::cout << i << std::endl;
+    }
+    for (auto i : pex::grep("H[ea]",{"Hello","World!", "Hallo","Welt!","by","hallo"}, std::regex::icase)) {
+        std::cout << i << std::endl;
+    }
+}
+```
+
+### Command Line Options
+
+커멘드라인 옵션은 소스 코드를 변경하지 않고도 애플리케이션을 동적으로 제어할 수 있는 방법이다. 사용자는 명령 줄에서 직접 인수를 전달하여 애플리케이션의 동작을 조정할 수 있다.
+
+간단하게 정의를 먼저 짚고 넘어가도록 하자.
+
+1. **Sub-command**: 얘는 애플리케이션이 수행할 다양한 작업이나 동작을 지정하는데 사용된다. 예를들어 Git에서 사용하는 `git clone`, `git commit`, `git pull`등이 subcommand가 될 수 있다. 일반적으로 애플리케이션 이름 다음에 위치하며, 주요 작업을 결정한다.
+2. **Options**: 주 명령어나 서브 커맨드의 동작을 수정한다. 플래그 또는 값을 요구하는 매개변수 형태가 있다.
+   1. **Flags**: 존재 여부에 따라 True 혹은 False를 나타내는 옵션이다. 일반적으로 `-`뒤에 글자나 단어로 표시된다.
+   2. **Parameters**: 값을 요구하는 옵션으로, 일반적으로 `--` 혹은 `=`로 표시된다.
+    ```bash
+    app commit --message="버그 수정"
+    app pull --rebase
+    ```
+3. **Positional Arguments**: `-`나 `--`없이 지정되는 변수로, 일반적으로 필수이며, 파일이름, 경로, 또는 데이터 등을 나타낸다. 보통 특정 순서나 지정된 위치가 이미 존재한다. 
+    ```cpp
+    app process file.txt
+    ```
+예시:
+
+```bash
+app process --verbose --output=results.txt input_data.txt
+```
+
+아래는 C++에서 CLA를 이용한 애플리케이션의 구현 예시이다. 
+```cpp
+static const char HELP[] =
+R"(Example application, Max Musterman, University of Potsdam
+Usage:
+{0} (-h | --help)
+{0} (-v | --verbose)
+{0} --round 2 number
+Options:
+-h --help Show this screen.
+--round n Rounding digits [default: 2]
+)";
+
+static const char USAGE[] =
+R"(Usage: {0} [-h,--help -v,--verbose] --round n number
+)";
+void usage(std::string appname, bool help = false) {
+    if (help) {
+        fmt::print(HELP, appname);
+    } else {
+        fmt::print(USAGE, appname);
+    }
+}
+int main(int argc, char *argv[]) {
+    std::string appname = argv[0];
+    std::regex isnumber("^[+-]?([0-9]*[.])?[0-9]+$");
+    float square = 0; // 위치 인수: 숫자의 제곱
+    bool square_set = false; // 위치 인수가 지정되었는지 여부
+    int round = 2; // 옵션: 반올림 자릿수, 기본값 2
+    bool help = false; // 도움말 플래그
+    bool verbose = false; // 자세한 출력 플래그
+
+    // 명령줄 인자가 없는 경우 사용법 출력
+    if (argc == 1) {
+        usage(appname);
+    } else if (argc == 2 && std::regex_match(argv[1], isnumber)) {
+        // 인자가 하나이고 숫자인 경우, 제곱할 수를 설정
+        square = std::stof(argv[1]);
+        square_set = true;
+    } else {
+        // 인자를 반복하여 처리
+        for (int i = 1; i < argc; i++) {
+            std::string carg(argv[i]);
+            if ("-h" == carg || "--help" == carg) {
+                help = true; // 도움말 플래그 설정
+            } else if ("-v" == carg || "--verbose" == carg) {
+                verbose = true; // 자세한 출력 플래그 설정
+            } else if (carg == "--round" || carg == "-r") {
+                // --round 옵션 처리
+                if (argc > i + 1 && std::regex_match(argv[i + 1], isnumber)) {
+                    round = std::stoi(argv[i + 1]);
+                    i = i + 1; // 다음 인자로 이동
+                }
+            } else if (std::regex_match(carg, isnumber)) {
+                // 숫자인 경우, 제곱할 수 설정
+                square = std::stof(carg);
+                square_set = true;
+            }
+        }
+    }
+
+    // 도움말 출력
+    if (help) {
+        usage(appname, true);
+    } else if (square_set) {
+        // 제곱 값 계산 및 출력
+        if (verbose) {
+            std::cout << "Let's be verbose!\n";
+        }
+        std::cout << "square of: " << square << " is " <<
+            std::fixed << std::setprecision(round) <<
+            square * square << std::endl;
+    }
+
+    return 0;
+}
+```
+```
+./app 4.5
+square of: 4.5 is 20.25
+
+./app --round 3 2.7
+square of: 2.7 is 7.290
+
+./app -v --round 1 3.14159
+Let's be verbose!
+square of: 3.14159 is 9.9
+```
+
+#### argc
+
+Argument count라고 하며, C++에서 argv나 argh등과 함께 명령줄 인수를 처리하는데 사용되는 변수들이다. 이들은 `main`함수의 매개변수로 전달된다.
+
+`argc`는 integer 타입의 변수로, 프로그램에 전달된 argument의 개수를 나타낸다. 
+```bash
+./program arg1 arg2 arg3
+```
+요로코롬 프로그램이 실행되었다면, `argc`는 3이 된다. 
+
+#### argv
+
+Argument vector이며, `char *argv[]` 또는 `char **argv[]`의 형태로, 프로그램에 전달된 각 인수를 포함하는 문자열 배열이다.
+
+`argv[0]`은 보통 프로그램의 이름을 가리키고, `argv[1]`, `argv[2]`등은 각각 첫번째, 두번째 사용자가 입력한 argument를 가리킨다. 
+
+```cpp
+#include <iostream>
+
+int main(int argc, char* argv[]) {
+    // argc는 전달된 인수의 개수를 나타낸다.
+    std::cout << "Number of arguments: " << argc << std::endl;
+
+    // argv[0]는 항상 실행 파일의 이름을 가진다.
+    std::cout << "Program name: " << argv[0] << std::endl;
+
+    // 인수가 있는 경우, 각 인수를 출력한다.
+    if (argc > 1) {
+        std::cout << "Arguments:" << std::endl;
+        for (int i = 1; i < argc; ++i) {
+            std::cout << "  " << i << ": " << argv[i] << std::endl;
+        }
+    } else {
+        std::cout << "No arguments provided." << std::endl;
+    }
+
+    return 0;
+}
+```
+#### argparse
+
+C++에는 Python의 argparse와 비슷한 명령줄 인수 파싱을 지원하는 라이브러리가 없지만, 몇 가지 대안이 있다. Boost.Program_options 라이브러리를 사용하여 명령줄 인수를 처리하는 것이 흔히 사용되는 방법이다. 
+그런데 참 시발 교수님은 비슷한걸 또 찾아내셨다. 표준 라이브러리 `unility`에 argparse를 제공하는 뭔가가 있나보다.
+
+다음은 사용 예시이다.
+
+```cpp
+#include <utility>
+#include "include/argparse.hpp"
+
+int main(int argc, char *argv[]) {
+    argparse::ArgumentParser program("argparse");
+    // 프로그램 이름을 "argparse"로 설정한 argparse 객체를 생성합니다.
+    program.add_argument("number")
+        .help("display the square of a given number")
+        .action([](const std::string& value) {
+            return std::stof(value); });
+    program.add_argument("-r", "--round")
+        .help("the rounding digits").default_value(2)
+        .action([](const std::string& value) {
+            return std::stoi(value); });
+    program.add_argument("-v", "--verbose")
+        .help("set verbose on")
+        .default_value(false)
+        .implicit_value(true);
+    try {
+        program.parse_args(argc, argv);
+    }
+    catch (const std::runtime_error& err) {
+        std::cout << err.what() << std::endl;
+        std::cout << program;
+        exit(0);
+    }
+
+    auto input = program.get<float>("number");
+    auto round = program.get<int>("--round");
+    auto verbose = program.get<bool>("--verbose");
+
+    if (verbose) { std::cout << "verbose is on\n"; }
+    std::cout << "square of: " << input << " is " <<
+        std::fixed << std::setprecision(round) <<
+        input*input << std::endl;
+
+    return 0;
+}
+```
+
+이걸 왜하는거임?
+
+
+#### Popl - Program Options Parser Library
+
+popl은 C++ 프로그램의 명령줄 인수를 처리하기 위한 라이브러리입니다. 이 라이브러리는 명령줄 인수를 파싱하고, 각 인수의 값을 쉽게 접근하고 사용할 수 있는 기능을 제공합니다. 주로 사용되는 기능은 다음과 같습니다:
+
++ 옵션 정의: popl을 사용하여 명령줄 옵션을 정의하고 설명을 추가할 수 있습니다. 예를 들어, 옵션의 이름, 단축 이름, 설명 등을 설정할 수 있습니다.
+
++ 인수 파싱: 프로그램이 시작될 때 주어진 명령줄 인수를 파싱하여 각 옵션과 위치 인수의 값을 추출합니다.
+
++ 옵션 및 위치 인수 접근: 파싱된 인수를 통해 각 옵션의 값을 가져올 수 있습니다. 이를 통해 프로그램 내에서 인수에 따라 다른 동작을 정의할 수 있습니다.
+
++ 자동 생성된 도움말: popl은 정의된 옵션들을 바탕으로 자동으로 도움말 메시지를 생성할 수 있습니다. 이를 통해 사용자에게 프로그램의 사용법을 쉽게 설명할 수 있습니다.
+
++ 예외 처리: 잘못된 인수나 옵션을 처리할 때 발생하는 예외를 처리할 수 있는 기능을 제공합니다.
+
+```cpp
+#include <iostream>
+#include <iomanip>
+#include "include/popl.hpp"
+#include <regex>
+
+using namespace std;
+using namespace popl;
+
+int main(int argc, const char * argv[]) {
+    // OptionParser 객체 생성 및 프로그램 설명 설정
+    OptionParser app("poplex application\nUsage: poplex [options] number\nOptions");
+
+    // 스위치 옵션 추가: -h 또는 --help
+    auto help = app.add<Switch>("h", "help", "produce help message");
+
+    // 스위치 옵션 추가: -v 또는 --verbose
+    auto verbose = app.add<Switch>("v", "verbose", "set verbose on");
+
+    // 값 옵션 추가: -r 또는 --round, 기본값은 2
+    auto round = app.add<Value<int>>("r", "round", "rounding digits", 2);
+
+    // 명령줄 인수 파싱
+    app.parse(argc, argv);
+
+    // print auto-generated help message
+    // 도움말 옵션(-h 또는 --help)이 설정된 경우 출력
+    if (help->is_set()) {
+        cout << app << "\n";
+        return 0;
+    } else if (verbose->is_set()) {
+        cout << "verbose is on\n";
+    }
+
+    // show unknown options
+    // 알 수 없는 옵션 (정의되지 않은 옵션) 출력
+    for (const auto& unknown_option : app.unknown_options()) {
+        cout << "Error: unknown option: " << unknown_option << "\n";
+        return 0;
+    }
+
+    // positionals
+    // 위치 인수 처리
+    float number = 0;
+    for (const auto& arg : app.non_option_args()) {
+        if (std::regex_match(arg, std::regex("[-+.0-9]+"))) {
+            number = std::stof(arg);
+            cout << "square of: " << number << " is " <<
+                    std::fixed <<
+                    std::setprecision(round->value()) <<
+                    number * number << std::endl;
+        } else {
+            cout << "Error: " << arg << " is not a number!\n";
+        }
+    }
+
+    // 만약 number가 0이면 도움말 출력
+    if (number == 0) {
+        cout << app.help();
+    }
+
+    return 0;
+}
+```
+#### flags.h
+
+```cpp
+#include <iostream>
+#include <iomanip>
+#include "include/flags.h"
+
+int main(int argc, char** argv) {
+    // args 객체 생성
+    const flags::args args(argc, argv);
+
+    // round 옵션 가져오기: long 옵션 이름 "round", 기본값 0
+    auto round = args.get<int>("round", 0);
+
+    // round 옵션이 0이면 short 옵션 이름 "r"을 확인하여 기본값 2 설정
+    if (round == 0) {
+        round = args.get<int>("r", 2);
+    }
+
+    // help 옵션 가져오기: long 옵션 이름 "help" 또는 short 옵션 이름 "h", 기본값 false
+    const auto help = args.get<bool>("help", false) || args.get<bool>("h", false);
+
+    // position 인수 가져오기: 인덱스 0, 기본값 0
+    const auto square = args.get<float>(0, 0);
+
+    // round 값 출력
+    std::cout << round << std::endl;
+
+    // 도움말 옵션이 설정된 경우 출력
+    if (help) {
+        std::cout << "Help!\n";
+    } else if (square == 0) {
+        // square 값이 0인 경우 사용법 출력
+        std::cout << "Usage: app number\n";
+    } else {
+        // square 값이 있는 경우 제곱 결과 출력
+        std::cout << "square of: " << square << " is " <<
+                std::fixed <<
+                std::setprecision(round) <<
+                square * square << std::endl;
+    }
+
+    return 0;
+}
+```
+
+
+#### Structopt
+
+structopt은 C++ 프로그램에서 명령줄 인수를 처리하기 위한 간단하고 강력한 라이브러리입니다. 주요 특징과 사용 방법을 설명드리겠습니다.
+
+- 간편한 정의: 구조체(struct)를 사용하여 옵션들을 정의하고, 이를 통해 명령줄 인수를 파싱합니다.
+
+- 유연성: 옵션은 위치 인수, 플래그, 매개변수 등으로 정의할 수 있습니다.
+
+- 자동 도움말 생성: 정의된 옵션들을 기반으로 자동으로 도움말 메시지를 생성하여 사용자에게 제공합니다.
+
+- 예외 처리: 잘못된 인수나 옵션을 처리하기 위한 예외 처리 기능을 제공합니다.
+
+- 모던 C++ 지원: C++17 이상의 모던한 C++ 기능을 활용하여 작성되었습니다
+
+```cpp
+#include <iostream>
+#include <iomanip>
+#include "include/structopt.hpp"
+
+struct Options {
+    float number = 0;                   // positional parameter
+    std::optional<bool> verbose = false;// optional flag
+    std::optional<int> round = 2;       // optional parameter
+};
+
+STRUCTOPT(Options, number, verbose, round);
+
+int main(int argc, char *argv[]) {
+    try {
+        auto app = structopt::app("Squaring application", "0.0.1");
+        auto options = app.parse<Options>(argc, argv);
+
+        if (options.number == 0) {
+            app.help(); // 인수가 주어지지 않았을 때 도움말 출력
+        } else {
+            if (options.verbose.value_or(false)) {
+                std::cout << "verbose is on\n";
+            }
+            std::cout << "square of: " << options.number << " is " <<
+                         std::fixed << std::setprecision(options.round.value_or(2)) <<
+                         options.number * options.number << std::endl;
+        }
+    } catch (structopt::exception& e) {
+        std::cout << e.what() << "\n";
+        std::cout << e.help(); // 예외 발생 시 도움말 출력
+    }
+
+    return 0;
+}
+```
