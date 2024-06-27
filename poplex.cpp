@@ -4,7 +4,6 @@
 #include "include/popl.hpp"
 using namespace std;
 using namespace popl;
-
 int main (int argc, const char * argv[]) {
     OptionParser app("poplex application\nUsage: poplex [options] number\nOptions");
     auto help   = app.add<Switch>("h", "help",
