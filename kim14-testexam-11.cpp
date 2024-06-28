@@ -1,5 +1,5 @@
 /*
-Create the basic outline of a console application with main function, help function
+1. Create the basic outline of a console application with main function, help function
 and checking of command line arguments. Save the possible command line
 arguments in variables or use a command line processor like popl or argparse. If the
 right number of arguments was not given call the help function and exit the
@@ -16,14 +16,7 @@ So the usage line shoud be something like this:
 $ appname [--help,--get-metacyc [MetaCyc-ID],--tab-metacyc] OBOFILE
 */
 
-#include <algorithm>
-#include <cstdio>
-#include <iostream>
-#include <map>
 #include <string>
-#include <vector>
-#include <fstream>
-#include <regex>
 #include "include/popl.hpp"
 
 /*
