@@ -1,37 +1,21 @@
-/*
-1. Create the basic outline of a console application with main function, help function
-and checking of command line arguments. Save the possible command line
-arguments in variables or use a command line processor like popl or argparse. If the
-right number of arguments was not given call the help function and exit the
-application. The two arguments and the optional third should be a GO-obo input
-filename and a taskname like --get--metacyc or --tab-metacyc and the optional third a
-MetaCyc identifier for the --get-metacyc parameter.
-
-You find the Obofiles on Moodle. Check if the given filename points to a valid
-filename, check if a valid argument was entered and check, if --get-metacyc was
-provided, that as well an MetaCyc id argument was given and that this id contains
-either a RXN or a PWY substring.
-
-So the usage line shoud be something like this:
-$ appname [--help,--get-metacyc [MetaCyc-ID],--tab-metacyc] OBOFILE
-*/
-
 #include <string>
 #include "include/popl.hpp"
 
-/*
+
 static const char HELP[] =
 R"(
+    PEX first test exam, part 1
+    Filename: kim14-testexam-11.cpp
     Made by: Jaesub Kim, University of Potsdam, Germany (2024)
+    Date: 2024-06-28
 )";
-*/
 
 bool is_valid_metacyc_id(const std::string& id) {
     return id.find("RXN") != std::string::npos || id.find("PWY") != std::string::npos;
 }
 
 int main(int argc, char **argv) {
-    popl::OptionParser app("kim14 PEX testexam Application\nUsage: appname [--help,--get-metacyc [MetaCyc-ID],--tab-metacyc] OBOFILE\nOptions");
+    popl::OptionParser app("\nUsage: appname [--help,--get-metacyc [MetaCyc-ID],--tab-metacyc] OBOFILE\nOptions");
     auto help = app.add<popl::Switch>("h", "help", "produce help message");
     auto get_metacyc = app.add<popl::Value<std::string>>("g", "get-metacyc", "--get-metacyc [MetaCyc-ID] OBOFILE");
     auto tab_metacyc = app.add<popl::Switch>("t", "tab-metacyc", "--tab-metacyc OBOFILE");
@@ -56,8 +40,8 @@ int main(int argc, char **argv) {
     std::string obofile = app.non_option_args()[0];
 
     if (help -> is_set()){
+        std::cout << HELP;
         std::cout << app << std::endl;
-        //std::cout << HELP << std::endl;
         return(0);
     }
 

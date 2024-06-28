@@ -1,30 +1,14 @@
-/*
-2. Opening and searching in the GO-obo file (4 points): Our program should
-work with any GO-obo file. Please don’t hardcode the filename in your application, if
-you do, you get a minus point. Implement the --get-metacyc function for a specific
-MetaCyc id. If the user gives, for example, the three arguments: --get-metacyc BETALACTAMASE-RXN filename.obo on the command line, then the GO-obo file is parsed
-and the id, the name, the namespace and and the entry itself should displayed on the
-terminal. Your functiomn has to return the data to the function caller, for instance as
-a vector of tuples, print the result outside of the function, for instance in main.
-Hint: If your code is very slow use limit your search to the first 1000 entries first to
-save your programming time during development. You should un-comment this in
-your final program. Here is a possible example invocation with output result:
-
-$ appname --get-metacyc BETA-LACTAMASE-RXN gene_ontology-2022-01.obo
-GO:0008800 beta-lactamase activity molecular_function MetaCyc:BETA-LACTAMASE-RXN
-GO:0033250 penicillinase activity molecular_function MetaCyc:BETA-LACTAMASE-RXN
-GO:0033251 cephalosporinase activity molecular_function MetaCyc:BETA-LACTAMASE-RXN
-*/
-
 #include <string>
 #include "include/popl.hpp"
 
-/*
 static const char HELP[] =
 R"(
+    PEX first test exam, part 2
+    Filename: kim14-testexam-12.cpp
     Made by: Jaesub Kim, University of Potsdam, Germany (2024)
+    Date: 2024-06-28
 )";
-*/
+
 const std::string RED = "\033[1;31mo\033[0m";
 const std::string GREEN = "\033[1;32mo\033[0m";
 const std::string YELLOW = "\033[1;33mo\033[0m";
@@ -105,7 +89,7 @@ std::vector<std::tuple<std::string, std::string, std::string, std::string>> get_
 }
 
 int main(int argc, char **argv) {
-    popl::OptionParser app("\033[1;36mo\033[0m kim14 PEX testexam Application\n\033[1;36mo\033[0m Usage: appname [--help,--get-metacyc [MetaCyc-ID],--tab-metacyc] OBOFILE\n\033[1;36mo\033[0m Options");
+    popl::OptionParser app("\n\033[1;36mo\033[0m Usage: appname [--help,--get-metacyc [MetaCyc-ID],--tab-metacyc] OBOFILE\n\033[1;36mo\033[0m Options");
     auto help = app.add<popl::Switch>("h", "help", "produce help message");
     auto get_metacyc = app.add<popl::Value<std::string>>("g", "get-metacyc", "--get-metacyc [MetaCyc-ID] OBOFILE");
     auto tab_metacyc = app.add<popl::Switch>("t", "tab-metacyc", "--tab-metacyc OBOFILE");
@@ -122,8 +106,8 @@ int main(int argc, char **argv) {
 
     // help?
     if (help -> is_set()){
+        std::cout << HELP;
         std::cout << app << std::endl;
-        //std::cout << HELP << std::endl;
         return 1;
     } 
 
