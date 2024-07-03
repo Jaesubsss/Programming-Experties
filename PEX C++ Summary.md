@@ -1,3 +1,85 @@
+- [Lecture 1](#lecture-1)
+  - [Identifier](#identifier)
+  - [Basic data types](#basic-data-types)
+    - [local and global](#local-and-global)
+    - [const](#const)
+  - [Operator](#operator)
+  - [Data Container](#data-container)
+  - [Storage classes](#storage-classes)
+  - [Templates](#templates)
+  - [Calling function](#calling-function)
+  - [Math functions](#math-functions)
+  - [random number](#random-number)
+- [Lecture 2](#lecture-2)
+  - [Inline function](#inline-function)
+  - [Recursion vs Iteration](#recursion-vs-iteration)
+  - [Pointers and References](#pointers-and-references)
+    - [how to return more than one value/item?](#how-to-return-more-than-one-valueitem)
+    - [Call by](#call-by)
+      - [Pointer and Reference?](#pointer-and-reference)
+  - [Const keyword](#const-keyword)
+  - [Function overloading](#function-overloading)
+  - [Polymorphic functions with templates](#polymorphic-functions-with-templates)
+  - [Lambda Functions](#lambda-functions)
+  - [Container](#container)
+    - [Array](#array)
+    - [Which container?](#which-container)
+      - [Vector](#vector)
+      - [map](#map)
+  - [Structure and Classes](#structure-and-classes)
+    - [Struct](#struct)
+    - [Class](#class)
+      - [Getter, Setter](#getter-setter)
+    - [Constructor](#constructor)
+      - [Initialization list](#initialization-list)
+- [Lecture 3](#lecture-3)
+  - [Memorization](#memorization)
+  - [Destructor](#destructor)
+  - [Static members](#static-members)
+  - [Const member function](#const-member-function)
+  - [C++ std::string](#c-stdstring)
+  - [Input, Output and File](#input-output-and-file)
+    - [Opening a file](#opening-a-file)
+      - [Openmode](#openmode)
+    - [Stringstream](#stringstream)
+    - [Filesystem](#filesystem)
+      - [Preprocessor](#preprocessor)
+    - [Traversing a directory](#traversing-a-directory)
+    - [Get home directory](#get-home-directory)
+    - [Formatted Output](#formatted-output)
+- [Lecture 4](#lecture-4)
+  - [Inheritance](#inheritance)
+    - [Base Class Constructor](#base-class-constructor)
+    - [Composition](#composition)
+    - [Multiple Inharitance](#multiple-inharitance)
+    - [Abstract Class](#abstract-class)
+    - [Mixin](#mixin)
+    - [Virtual Functions](#virtual-functions)
+      - [Using Pointer and Reference](#using-pointer-and-reference)
+      - [Using Template and Auto](#using-template-and-auto)
+  - [Stylistic rules](#stylistic-rules)
+  - [Regex](#regex)
+    - [regex functions](#regex-functions)
+    - [Command Line Options](#command-line-options)
+      - [argc](#argc)
+      - [argv](#argv)
+      - [argparse](#argparse)
+      - [Popl - Program Options Parser Library](#popl---program-options-parser-library)
+      - [flags.h](#flagsh)
+      - [Structopt](#structopt)
+- [Lecture 5](#lecture-5)
+  - [Friends Function](#friends-function)
+  - [Copy Constructor](#copy-constructor)
+  - [This pointer](#this-pointer)
+  - [Operator overloading](#operator-overloading)
+  - [Namespace](#namespace)
+    - [Nested namespace](#nested-namespace)
+  - [Function Template](#function-template)
+  - [Class Template](#class-template)
+  - [Standard Template Library (STL)](#standard-template-library-stl)
+    - [Set vs Vector vs Map](#set-vs-vector-vs-map)
+    - [Pair and Tuple](#pair-and-tuple)
+
 # Lecture 1
 
 c++같은 좆같은 언어를 왜 쓰는가? c++은 저수준 언어이기 때문에, 메모리에 직접적인 액세스가 가능하고 강력한 하드웨어 제어능력이 있다. 파이썬같은건 대충 휘뚜루 마뚜루 쓰기엔 좋은데, 대규모 및 고성능 애플리케이션에선 조금 짜친다. c++은 이런 대규모 데이터를 다루기에 좋은데, 마침 bioinformatic이 아주 대규모 데이터를 다루네? 따라서 c++사용은 거의 필수라고 할 수 있다.
@@ -3384,3 +3466,525 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 ```
+
+# Lecture 5
+
+## Friends Function
+
+위에서 봤듯이, private로 선언된 함수나 protected로 선언된 함수 및 변수는 접근하기가 어려웠다. 이때 사용할 수 있는것이 바로 프렌드 함수이다. 클래스의 프렌드 함수는 클래스의 범위 외부에 정의되지만 클래스의 모든 porivate 및 protected 멤버에 접근할 수 있는 권한을 가진다. **프렌드 함수의 프로토타입은 클래스 정의에 나타나지만, 프렌드는 멤버함수가 아니다.** 프렌드는 함수, 함수 템플릿, 멤버 함수, 클래스 또는 클래스 템플릿일 수 있다.
+
+다시 말해, 프렌드 함수는 클래스 외부에 정의되지만, 클래스 정의 부분에서 함수의 원형, 즉 프로토 타입을 선언하여 프렌드로 지정해야 한다. 또한, 선언할 때 `friend` 키워드를 사용하여 명시해주어야 한다. 
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Box {
+private:
+    double width; // private 멤버 변수로 박스의 너비를 저장
+
+public:
+    // printWidth 함수를 프렌드로 선언하여 이 함수가 private 멤버에 접근할 수 있게 함
+    friend void printWidth(Box box);
+
+    // 멤버 함수로 width 변수의 값을 설정하는 함수
+    void setWidth(double wid) { 
+        width = wid; 
+    }
+};
+
+// 주의: printWidth()는 일반 함수이며, 어떤 클래스의 멤버 함수가 아님
+void printWidth(Box box) {
+    /* printWidth()는 Box 클래스의 프렌드이므로,
+       이 클래스의 어떤 멤버에도 직접 접근할 수 있음 */
+    cout << "Width of box : " << box.width << endl;
+}
+
+// 프로그램의 메인 함수
+int main() {
+    Box box; // Box 클래스의 인스턴스 생성
+
+    // 멤버 함수를 사용하여 박스의 너비를 설정
+    box.setWidth(10.0);
+
+    // 프렌드 함수를 사용하여 박스의 너비를 출력
+    printWidth(box);
+
+    return 0;
+}
+```
+
+프렌드 함수를 사용할 때 주의해야할 점이 있다.
+
+- 프렌드 함수는 제한된 목적으로만 사용해야 한다. 프렌드 함수는 내부 함수에 접근할 수 있어 강력하지만, 이는 잘못 사용하면 encapsulation을 저해할 수 있기 때문에 꼭 필요한 경우에만 사용하는 것이 좋다.
+- 너무 많은 함수나 외부 클래스가 protected 또는 private 데이터를 가진 클래스의 프렌드로 선언되는 것은 바람직 하지 않다. 이는 데이터를 보호하는 본래 목적을 훼손할 수 있다. 
+- 프렌드 관계는 상호적이지 않다. 클래스 A가 클래스 B의 프렌드더라도, 클래스 B가 자동으로 클래스의 A의 프렌드가 되거나 하진 않는다. 
+- 프렌드 관계는 상속되지 않는다.
+- 자바에는 프렌드 함수가 없다. 
+
+
+## Copy Constructor
+
+카피 생성자는 c++에서 동일한 클래스의 다른 객체를 사용하여 새로운 객체를 초기화하는 특별한 멤버함수이다. 원형은 다음과 같다.
+
+```cpp
+ClassName(const ClassName &old_obj);
+```
+
+copy constructor를 정의하지 않더라도, c++컴파일러는 각 클래스에 대해 default copy constructor를 생성한다. 이 기본 카피 생성자는 객체 간의 멤더 단위 복사를 수행한다. 
+
+```cpp
+#include <iostream>
+#include <cstring>
+using namespace std;
+
+class String {
+private:
+    char *s;
+    int size;
+
+public:
+    String(const char *str = NULL); // 생성자
+    ~String() { delete [] s; } // 소멸자
+    String(const String &oldstr); // 복사 생성자
+    void print() { cout << s << endl; }
+    void change(const char *);
+};
+
+// 생성자: 문자열을 받아서 객체를 초기화
+String::String(const char *str) {
+    size = strlen(str);
+    s = new char[size + 1]; // 새로운 메모리 할당
+    strcpy(s, str);
+}
+
+// 문자열을 변경하는 함수
+void String::change(const char *str) {
+    delete [] s;
+    size = strlen(str);
+    s = new char[size + 1];
+    strcpy(s, str);
+}
+
+// 복사 생성자: 다른 String 객체를 사용하여 새로운 객체를 초기화
+String::String(const String &oldstr) {
+    size = oldstr.size;
+    s = new char[size + 1];
+    strcpy(s, oldstr.s);
+}
+
+int main() {
+    String str1("GeeksQuiz"); // String 객체 str1 생성
+    String str2 = str1; // 복사 생성자 호출, str1을 사용하여 str2 초기화
+    str1.print(); // str1 출력: "GeeksQuiz"
+    str2.print(); // str2 출력: "GeeksQuiz"
+
+    str2.change("GeeksforGeeks"); // str2의 문자열을 변경
+    str1.print(); // str1 출력: "GeeksQuiz"
+    str2.print(); // str2 출력: "GeeksforGeeks"
+
+    return 0;
+}
+```
+
+기본으로 자동으로 생성되는 디폴트 copy 콘스트럭터는 `shallow copy`를 수행한다. 즉, 객체의 모든 멤버 변수를 그대로 복사한다. 만약 객체가 포인터나 동적 할당된 메모리를 포함하고 있다면, shallow copy는 이런 자원을 공유하게 되어 예기치 않은 동작을 유발할 수 있다.
+
+이런 경우를 대비하여, `deep copy`를 수행하는 카피 컨스트럭터를 정의할 수 있다. deep copy는 객체의 멤버가 가리키는 메모리도 새로 할당하여 복사한다. 
+
+위의 코드는 복사 생성자를 두개 넣어서 deep copy를 수행하는데, 위의, 클래스 내의 복사 생성자를 제거할 경우 shallow copy가 쓰이게 되어 위에 말한 문제가 생길 수 있다. 조심하자. 
+
+## This pointer
+
+`this` 포인터는 C++에서 모든 객체가 자신의 주소에 접근할 수 있게 하는 중요한 포인터이다. `this` 포인터는 모든 멤버 함수의 암시적 매개변수이다. 따라서, 멤버 함수 내부에서 `this`를 사용하여 호출 객체를 참조할 수 있다. 프렌드 함수는 클래스의 멤버 함수가 아니기 때문에 `this` 포인터를 가지지 않는다. 
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Box {
+public:
+    // 생성자 정의
+    Box(double l = 2.0, double b = 2.0, double h = 2.0) {
+        cout << "Constructor called." << endl;
+        length = l;
+        breadth = b;
+        height = h;
+    }
+    
+    // 부피를 계산하는 멤버 함수
+    double Volume() {
+        return length * breadth * height;
+    }
+    
+    // Box 객체를 비교하는 멤버 함수
+    int compare(Box box) {
+        return this->Volume() > box.Volume();
+        // this를 통해 호출 객체의 부피와, 매개변수로 전달된 객체의 부피를 비교한다. 
+        // this -> Volume()은 호출 객체의 부피를 참조한다. 
+    }
+
+    // `this` 포인터를 사용하지 않고 Box 객체를 비교하는 멤버 함수
+    int compare2(Box box) {
+        return Volume() > box.Volume();
+    }
+
+private:
+    double length;  // 박스의 길이
+    double breadth; // 박스의 너비
+    double height;  // 박스의 높이
+};
+
+int main(void) {
+    Box Box1(3.3, 1.2, 1.5); // Box1 선언 및 초기화
+    Box Box2(8.5, 6.0, 2.0); // Box2 선언 및 초기화
+
+    // Box1과 Box2를 비교하여 결과 출력
+    if (Box1.compare(Box2)) {
+        cout << "Box2 is smaller than Box1" << endl;
+    } else {
+        cout << "Box2 is equal to or larger than Box1" << endl;
+    }
+
+    // compare 함수와 compare2 함수의 결과를 출력
+    cout << "compare: " << Box1.compare(Box2) << " compare2: " << Box1.compare2(Box2) << endl;
+    return 0;
+}
+```
+
+언제 `this`를 사용해아할까? 
+
+보통 로컬 변수의 이름이 member의 이름과 같을때 `this -> x = x`처럼 사용하고, 호출 객체에 참조를 리턴해야할 때 `*this`처럼 사용한다. 
+
+## Operator overloading
+
+오퍼레이터 오버로딩은 C++에서 사용자가 정의한 타입에 대해 내장 연산자를 재정의할 수 있는 기능이다. 이를 통해 사용자 정의 타입에 대해서도 산술 연산, 비교 연산 등을 사용할 수 있다. 
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Box {
+public:
+    double getVolume(void) {
+        return length * breadth * height;
+    }
+    void setLength(double len) {
+        length = len;
+    }
+    void setBreadth(double bre) {
+        breadth = bre;
+    }
+    void setHeight(double hei) {
+        height = hei;
+    }
+
+    // + 연산자 오버로딩: 두 Box 객체를 더한 결과를 반환
+    Box operator+(const Box& b) {
+        Box box;
+        box.length = this->length + b.length;
+        box.breadth = this->breadth + b.breadth;
+        box.height = this->height + b.height;
+        return box;
+    }
+
+private:
+    double length;  // 상자의 길이
+    double breadth; // 상자의 너비
+    double height;  // 상자의 높이
+};
+
+int main() {
+    Box Box1; // Box1 객체 생성
+    Box Box2; // Box2 객체 생성
+    Box Box3; // Box3 객체 생성
+
+    // Box1 사양 설정
+    Box1.setLength(6.0);
+    Box1.setBreadth(7.0);
+    Box1.setHeight(5.0);
+
+    // Box2 사양 설정
+    Box2.setLength(12.0);
+    Box2.setBreadth(13.0);
+    Box2.setHeight(10.0);
+
+    // Box1의 부피 계산 및 출력
+    double volume = Box1.getVolume();
+    cout << "Volume of Box1: " << volume << endl;
+
+    // Box2의 부피 계산 및 출력
+    volume = Box2.getVolume();
+    cout << "Volume of Box2: " << volume << endl;
+
+    // 두 상자를 더하여 Box3에 할당
+    Box3 = Box1 + Box2;
+
+    // Box3의 부피 계산 및 출력
+    volume = Box3.getVolume();
+    cout << "Volume of Box3: " << volume << endl;
+
+    return 0;
+}
+```
+요렇게, 그냥 원하는 연산자를 `operator`키워드와 붙여서 쓰면 된다. 만약 `+`를 오버로딩 하고싶으면 뭐 예를들어 `int operator+`, 다른거라면 뭐 `bool operator==`등이 있겠다. 
+
+연산자를 오버로딩 하는 경우는 실제로는 매우 드물다. 대부분의 연산자는 해당 연산의 직관적인 의미를 유지하며 사용된다. 무분별한 오버로딩은 혼란을 초래할 수 있다. 
+
+## Namespace
+
+네임스페이스(namespace)는 C++에서 식별자를 논리적으로 그룹화하여 충돌을 방지하고 코드를 구조화하는 데 사용되는 메커니즘이다. 네임스페이스는 전역 범위에서 정의되며, 다음과 같은 이점을 제공한다. 
+
+* **식별자 충돌 방지**: 다양한 소스에서 사용되는 식별자들을 네임스페이스 내에서 격리함으로써 충돌을 방지한다.
+* **코드 구조화**: 관련된 함수, 변수, 클래스 등을 하나의 네임스페이스에 묶어 코드를 더 쉽게 관리할 수 있다.
+* **가독성 및 유지보수성**: 코드의 구조가 명확해지고, 코드의 의도가 명백해지므로 가독성이 향상되고 유지보수가 용이해진다.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+// first name space
+namespace first_space {
+    void func() {
+        cout << "Inside first_space" << endl;
+    }
+}
+
+// second name space
+namespace second_space {
+    void func() {
+        cout << "Inside second_space" << endl;
+    }
+}
+
+int main() {
+    // Calls function from first name space.
+    first_space::func();
+
+    // Calls function from second name space.
+    second_space::func();
+
+    return 0;
+}
+```
+
+요렇게 네임스페이스 안에 함수를 가두면, 네임스페이스를 명시하고 그 다음 함수를 호출해야 하기 때문에, 함수들의 이름이 같더라도 각각 다른 함수를 호출할 수 있다. 
+
+이런 네임스페이스는 `using namespace std;`와 같은 코드를 통해 네임스페이스 전체를 가져올 수 있고, 네임스페이스 명시를 생략하여 사용할 수 있다. 그러나 이와같은 방법은 식별자 충돌을 초래할 수 있으므로 주의해야한다. 
+
+### Nested namespace
+
+네임스페이스 안에 네임스페이스를 중첩하여 사용할 수 있다. 
+
+```cpp
+#include <iostream>
+using namespace std;
+
+// 첫 번째 네임스페이스
+namespace first_space {
+    void func() {
+        cout << "Inside first_space" << endl;
+    }
+
+    // 첫 번째 네임스페이스 안에 중첩된 두 번째 네임스페이스
+    namespace second_space {
+        void func() {
+            cout << "Inside second_space" << endl;
+        }
+    }
+}
+
+using namespace first_space::second_space;
+
+int main () {
+    // 두 번째 네임스페이스에 있는 함수 호출
+    func();
+
+    return 0;
+}
+```
+복잡한 코드의 구조를 효과적으로 관리할 수 있는 방법이다. 정리충 애들이 좋아할 것 같은 방법임.
+
+**정리**
+
+* **코드 구조화 및 정리**: 네임스페이스를 사용하면 코드를 더욱 체계적으로 구조화할 수 있습니다. 관련된 변수, 함수, 클래스를 함께 그룹화하여 관리할 수 있습니다.
+
+* **이름 충돌 회피**: 서로 다른 네임스페이스에 동일한 이름을 사용하여 이름 충돌을 피할 수 있습니다. 이는 큰 프로젝트에서 특히 중요합니다.
+
+* **관련 기능 집중**: 네임스페이스를 사용하면 관련된 기능을 하나의 네임스페이스 안에 집중시킬 수 있습니다. 예를 들어, 파일 시스템 관련 기능은 std::filesystem 네임스페이스 안에 모을 수 있습니다.
+
+* **여러 파일에서 네임스페이스 확장**: 네임스페이스는 여러 파일에 걸쳐 확장할 수 있으며, 이는 코드의 재사용성과 유지보수성을 높이는 데 도움을 줍니다.
+
+* **현재 스코프에 네임스페이스 가져오기**: using 키워드를 사용하여 특정 네임스페이스의 범위를 현재 스코프로 가져올 수 있습니다. 이는 코드를 간결하게 만들고 타이핑을 줄이는 데 도움을 줍니다.
+
+* **네임스페이스 별칭**: 네임스페이스의 긴 이름을 짧게 줄여서 사용할 수 있습니다. 이는 코드를 읽기 쉽게 만들어주며, 복잡한 구조의 네임스페이스를 간단하게 다룰 수 있습니다.
+
+* **대규모 프로젝트에서의 권장**: 작은 프로젝트보다는 대규모 프로젝트에서 네임스페이스 사용이 권장됩니다. 코드의 구조화와 관리가 더욱 중요해지기 때문입니다.
+
+* **함수 선언과 정의**: 네임스페이스 안에서 함수를 선언하고 외부에서 정의할 수 있습니다. 이는 네임스페이스 안에서의 인터페이스 분리와 구현의 분리를 가능하게 합니다.
+
+* **네임스페이스의 파일 구조**: 네임스페이스가 여러 파일로 구성되어 있는 경우, 해당 네임스페이스와 동일한 이름의 폴더 안에 네임스페이스 파일들을 위치시키는 것이 일반적입니다.
+
+* **C++ 네임스페이스의 편리함**: C++의 네임스페이스는 R과 같은 다른 언어의 네임스페이스보다 훨씬 편리합니다. 예를 들어, 모든 함수의 자동 import가 없으며, 네임스페이스의 생성과 중첩이 더 간단합니다.
+
+
+## Function Template
+
+템플릿은 C++에서 제공하는 기능으로, 여러 데이터 타입에 대해 동작할 수 있는 함수나 클래스를 정의할 수 있게한다. 지금까지 변수에 대한 템플릿은 알아봤는데, 템플릿은 사실 함수나 클래스에도 사용이 가능하다.
+
+```cpp
+template <typename T>
+T Max(T const& a, T const& b) {
+    return a < b ? b : a;
+}
+```
+
+요래 사용이 가능하다. 
+
+## Class Template
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <string>
+#include <stdexcept>
+using namespace std;
+
+// 템플릿 클래스 Stack 정의
+template <class T>
+class Stack {
+private:
+    vector<T> elems; // 요소들을 저장하는 벡터
+public:
+    void push(T const &elem); // 요소를 스택에 추가하는 함수
+    T pop(); // 스택에서 요소를 제거하고 반환하는 함수
+    T top() const; // 스택의 맨 위 요소를 반환하는 함수
+    bool empty() const; // 스택이 비어있는지 여부를 반환하는 함수
+};
+
+// push 함수 정의: 요소를 스택에 추가
+template <class T>
+void Stack<T>::push(T const& elem) {
+    elems.push_back(elem); // 벡터에 요소 추가
+}
+
+// pop 함수 정의: 스택에서 요소를 제거하고 반환
+template <class T>
+T Stack<T>::pop() {
+    if (elems.empty()) // 스택이 비어있는 경우 예외 처리
+        throw out_of_range("Stack<T>::pop(): empty stack");
+    T elem = top(); // 맨 위 요소를 얻어옴
+    elems.pop_back(); // 벡터에서 마지막 요소 제거
+    return elem; // 제거한 요소 반환
+}
+
+// top 함수 정의: 스택의 맨 위 요소 반환
+template <class T>
+T Stack<T>::top() const {
+    if (elems.empty()) // 스택이 비어있는 경우 예외 처리
+        throw out_of_range("Stack<>::top(): empty stack");
+    return elems.back(); // 벡터의 마지막 요소 반환
+}
+
+// empty 함수 정의: 스택이 비어있는지 여부 반환
+template <class T>
+bool Stack<T>::empty() const {
+    return elems.empty(); // 벡터의 empty() 함수 호출하여 결과 반환
+}
+
+int main() {
+    try {
+        Stack<int> intStack; // 정수형 스택 생성
+        Stack<string> stringStack; // 문자열 스택 생성
+
+        // 정수형 스택 조작
+        intStack.push(7);
+        intStack.push(9);
+        cout << "Top of intStack: " << intStack.top() << endl;
+
+        // 문자열 스택 조작
+        stringStack.push("Hello");
+        stringStack.push("World!");
+        cout << "Top of stringStack: " << stringStack.top() << endl;
+        cout << "Popped element from stringStack: " << stringStack.pop() << endl;
+
+        // 스택이 비어있는 경우
+        stringStack.pop(); // 두 번 pop() 호출하여 스택 비우기
+        stringStack.pop(); 
+
+    } catch (exception const& ex) {
+        cout << "Exception: " << ex.what() << endl; // 예외 처리
+        return -1;
+    }
+
+    return 0;
+}
+```
+
+아 근데 나는 진짜 템플릿은 알다가도 모르겠다. 
+
+## Standard Template Library (STL)
+
+STL(Standard Template Library)은 C++ 프로그래밍 언어를 위한 표준 라이브러리이다. 이 라이브러리는 C++ 표준에 포함되어 있으며, 다음 네 가지 주요 구성 요소를 제공한다. 
+
+* 알고리즘 (Algorithms):
+
+  * STL은 다양한 알고리즘을 제공합니다. 예를 들어, 정렬(sorting), 검색(searching), 변형(transforming) 등의 알고리즘을 포함합니다. 이 알고리즘들은 일반적으로 사용되는 작업들을 구현하여 제공하며, 데이터 처리를 간편하게 할 수 있습니다.
+* 컨테이너 (Containers):
+
+  * 컨테이너는 데이터를 저장하고 관리하는 객체들을 말합니다. STL은 다양한 종류의 컨테이너를 제공하는데, 배열(array), 리스트(list), 벡터(vector), 맵(map), 세트(set) 등이 있습니다. 각 컨테이너는 특정 데이터 구조를 구현하여 데이터를 효율적으로 저장하고 접근할 수 있게 합니다.
+
+  * `std::vector`: 동적 배열을 제공하며, 원소의 끝에 삽입 및 삭제가 빠르게 가능합니다.
+  * `std::deque`: 덱(Deque)은 double-ended queue의 약어로, 양 끝에서 원소의 추가와 제거가 O(1) 시간에 가능한 자료구조입니다.
+  * `std::list`: 이중 연결 리스트를 구현한 자료구조로, 임의 위치에서의 원소 삽입과 삭제가 O(1) 시간에 가능합니다.
+  * `std::set`: 균형 이진 검색 트리로 구현된 자료구조로, 중복을 허용하지 않고 원소를 정렬된 상태로 유지합니다.
+  * `std::map`: 키와 값을 한 쌍으로 저장하는 자료구조로, 키를 기준으로 정렬되어 있으며 중복을 허용하지 않습니다.
+  * `std::unordered_set`: 해시 테이블을 사용하여 구현된 자료구조로, 원소의 삽입, 삭제, 검색 등이 상수 시간에 이루어집니다.
+  * `std::unordered_map`: 해시 테이블을 사용하여 구현된 맵으로, 키를 기준으로 중복 없이 값을 저장하며 상수 시간에 삽입, 삭제, 검색이 가능합니다.
+  * 
+* 함수 (Functions):
+
+  * STL은 함수 객체(function objects)와 함수 포인터(function pointers)를 포함한 다양한 함수를 제공합니다. 이러한 함수들은 알고리즘과 컨테이너에서 사용될 수 있으며, 일반 함수 또는 람다 표현식(lambda expressions)으로 구현될 수 있습니다. 
+  * 대표적으로 `std::sort`, `std::find`, `std::transform`등이 있다. 
+* 이터레이터 (Iterators):
+
+  * 이터레이터는 컨테이너의 요소를 순회(traverse)하고 접근(access)하기 위한 인터페이스를 제공합니다. STL에서 제공하는 이터레이터들은 포인터와 유사하게 동작하며, 컨테이너의 요소에 접근하여 작업을 수행할 수 있습니다.
+
+
+### Set vs Vector vs Map
+
+* **std::set**:
+
+  * `std::set`은 정렬된 유일한 값을 갖는 컨테이너입니다. 중복된 값이 삽입되지 않으며, 항목들이 자동으로 정렬됩니다.
+  * 여러 항목을 한 번에 삽입할 때 `std::set`이 더 빠릅니다.
+  * 항목이 정렬된 순서로 유지되어야 할 경우에 사용됩니다.
+  * 성능이 매우 중요한 경우에 사용될 수 있습니다.
+* **std::vector**:
+
+  * `std::vector`는 동적 배열을 나타내며, 요소를 순차적으로 저장합니다. 크기가 동적으로 조절되며, 중간 삽입 및 삭제가 비효율적일 수 있습니다.
+  * 자료를 순차적으로 접근해야 할 때 유용하며, 순서가 중요한 경우에도 사용될 수 있습니다.
+  * 많은 경우에서 기본적으로 사용되는 컨테이너입니다.
+* **std::map**:
+
+  * `std::map`은 key-value 쌍으로 데이터를 저장하는 연관 컨테이너입니다. key는 유일해야 하며, 자동으로 정렬됩니다.
+  * 데이터를 검색할 때 효율적이며, key에 따라 자동으로 정렬되어야 할 경우에 사용됩니다.
+  * `std::multimap`은 하나의 key에 여러 개의 값이 매핑될 수 있습니다. 이는 `std::map`에 `std::vector`를 값으로 사용하여 구현할 수 있습니다.
+* 추가 설명:
+
+  * `std::array`는 정적 배열로 크기가 고정되어 있으며, `std::vector`보다 메모리 관리나 크기 조정 면에서 제약이 있습니다.
+  * `std::multimap`은 `std::map`에 `std::vector`를 값으로 사용하여 다수의 값들을 한 key에 연결할 수 있습니다. 이는 반복문에서 더 쉽게 처리할 수 있습니다.
+  * 일반적으로, 대부분의 상황에서는 `std::vector`와 `std::map`을 사용하는 것이 권장됩니다. 이 두 컨테이너는 유연성과 성능 면에서 매우 우수합니다.
+
+### Pair and Tuple 
+
+새로 생긴 애들인가보다. 
+
+* **std::tuple**:
+
+  * `std::tuple`은 C++ 표준 라이브러리에서 제공하는 클래스로, 다양한 타입의 여러 값을 하나의 단위로 저장할 수 있습니다.
+  * 예를 들어, `std::tuple<int, std::string, double>`은 정수, 문자열, 실수 세 가지 타입의 값을 저장할 수 있는 구조체입니다.
+  * `std::make_tuple` 함수를 사용하여 tuple을 생성할 수 있습니다. 이 함수는 전달된 값들로부터 tuple을 만들어 반환합니다.
+* **std::pair**:
+
+  * `std::pair`는 두 개의 값, 동일한 타입 또는 다른 타입의 두 값을 저장할 수 있는 클래스입니다.
+  * 예를 들어, `std::pair<int, std::string>`은 정수와 문자열 한 쌍을 저장할 수 있습니다.
+  * `std::make_pair` 함수를 사용하여 pair를 생성할 수 있습니다. 이 함수는 두 개의 값으로부터 pair를 만들어 반환합니다.
