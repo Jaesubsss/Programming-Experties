@@ -30,6 +30,8 @@ R"(
     Date: 2024-07-04
 )";
 
+
+
 std::vector<std::tuple<std::string, std::string, bool>> searchSequence(const std::string& filename, const std::string& pattern) {
     std::ifstream file(filename);
     std::string line;
@@ -69,6 +71,7 @@ std::vector<std::tuple<std::string, std::string, bool>> searchSequence(const std
 
     return results;
 }
+
 
 const std::string RED = "\033[1;31mo\033[0m";
 const std::string GREEN = "\033[1;32mo\033[0m";
