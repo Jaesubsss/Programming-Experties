@@ -3,6 +3,10 @@
 #include "include/popl.hpp"
 
 
+// compile with:
+// g++ -std=c++11 -o .\build\testexam13.exe .\kim14-testexam-13.cpp
+// .\build\testexam13.exe --help
+
 static const char HELP[] =
 R"(
     PEX first test exam, part 3

@@ -1,6 +1,9 @@
 #include <string>
 #include "include/popl.hpp"
 
+// compile with: 
+// g++ -std=c++11 -o .\build\testexam11.exe .\kim14-testexam-11.cpp
+// .\build\testexam11.exe --help
 
 static const char HELP[] =
 R"(

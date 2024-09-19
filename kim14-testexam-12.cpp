@@ -1,6 +1,10 @@
 #include <string>
 #include "include/popl.hpp"
 
+// compile with: 
+// g++ -std=c++11 -o .\build\testexam12.exe .\kim14-testexam-12.cpp
+// .\build\testexam12.exe --help
+
 static const char HELP[] =
 R"(
     PEX first test exam, part 2
