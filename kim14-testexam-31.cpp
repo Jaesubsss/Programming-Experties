@@ -28,7 +28,7 @@ have the right filename extension. The database files should be downloaded from 
 
 static const char HELP[] =
 R"(
-    PEX first test exam 3, part 1
+    PEX test exam 3, part 1
     Filename: kim14-testexam-31.cpp
     Made by: Jaesub Kim, University of Potsdam, Germany (2024)
     Date: 2024-09-19

@@ -1,3 +1,28 @@
+- [C - Boring part](#c---boring-part)
+  - [Basic](#basic)
+    - [return 0 vs return 1](#return-0-vs-return-1)
+    - [printf();](#printf)
+    - [scanf();](#scanf)
+  - [Data types and control constructs](#data-types-and-control-constructs)
+    - [Size of data type](#size-of-data-type)
+    - [형변환](#형변환)
+    - [반복문](#반복문)
+    - [String](#string)
+    - [Pointer](#pointer)
+  - [Function](#function)
+    - [local vs global](#local-vs-global)
+      - [local](#local)
+      - [global](#global)
+    - [static vs automatic](#static-vs-automatic)
+  - [Array and Pointers](#array-and-pointers)
+    - [Array](#array)
+      - [Multidimensional arrays](#multidimensional-arrays)
+      - [Pointers](#pointers)
+  - [Pointers, Trees, Linked Lists](#pointers-trees-linked-lists)
+      - [Pointer arithmetics](#pointer-arithmetics)
+      - [melloc()](#melloc)
+      - [struct name{}](#struct-name)
+      - [typedef](#typedef)
 - [Lecture 1](#lecture-1)
   - [Identifier](#identifier)
   - [Basic data types](#basic-data-types)
@@ -22,7 +47,7 @@
   - [Polymorphic functions with templates](#polymorphic-functions-with-templates)
   - [Lambda Functions](#lambda-functions)
   - [Container](#container)
-    - [Array](#array)
+    - [Array](#array-1)
     - [Which container?](#which-container)
       - [Vector](#vector)
       - [map](#map)
@@ -79,6 +104,511 @@
   - [Standard Template Library (STL)](#standard-template-library-stl)
     - [Set vs Vector vs Map](#set-vs-vector-vs-map)
     - [Pair and Tuple](#pair-and-tuple)
+
+# C - Boring part
+
+## Basic
+
+### return 0 vs return 1
+
+C와 C++에서 return 0과 return 1은 함수가 종료될 때 반환하는 값에 차이를 두는 구문이다. 특히, 메인 함수(main 함수)에서 주로 사용되며, 그 값은 프로그램의 종료 상태를 나타낸다.
+
+1. return 0
+
+   * 성공적인 종료를 의미한다.
+   * 대부분의 운영 체제는 0을 성공적인 프로그램 실행을 나타내는 값으로 해석한다.
+   * 따라서 return 0;을 하면 프로그램이 정상적으로 종료되었음을 의미한다.
+
+2. return 1 (또는 다른 비 0 값)
+
+   * 오류 또는 비정상적인 종료를 의미한다.
+   * 비 0 값을 반환하면, 일반적으로 프로그램이 오류가 발생했거나 비정상적으로 종료되었음을 나타낸다.
+   * 관례적으로 1은 일반적인 오류를 나타내는 경우가 많지만, 1 외에도 다양한 값이 상황에 맞게 사용될 수 있다. 예를 들어, 특정 오류에 대해 다른 값을 반환할 수 있다.
+
+### printf();
+
+`print`로 대표적으로 사용되는 녀석인데, 사용이 좀 독특하다. 출력할 문자열 내에 형식 지정자를 끼워넣고, 문자열 외부에서 그 형식 지정자에 들어갈 변수를 순서대로 넣어준다. 
+
+```c
+int a = 10;
+float b = 3.14;
+char c = 'A';
+
+printf("정수: %d, 실수: %f, 문자: %c\n", a, b, c);
+// 출력: 정수: 10, 실수: 3.140000, 문자: A
+```
+형식 지정자는 다음과 같다.
+
+* `%d`: 정수형(`int`)
+* `%f`: 실수형(`float, double`)
+* `%c`: 문자형(`char`)
+* `%s`: 문자열(`char *`)
+* `%x`, `%X`: 16진수 출력
+* `%o`: 8진수 출력
+* `%%`: % 문자 출력
+
+### scanf();
+
+뭔가 입력을 받을 때 사용되는 함수로써, 일반적인 사용법은 `printf()`와 같다. 
+
+```c
+int a;
+float b;
+char c;
+
+scanf("%d %f %c", &a, &b, &c);
+```
+형식지정자에 따라, 상응하는 데이터형에 따른 입력을 받는다. 
+
+
+## Data types and control constructs
+
+### Size of data type
+
+|Type|Bytes| Minimum range|
+|:-|:-:|:-|
+|char|1| [-128, +127]|
+|unsigned char| 1| [0, 255]
+|short |2| [-32,768, +32,767]|
+|unsigned short |2| |[0, 65,535]|
+|int |2 |[-32,768, +32,767]|
+|unsigned int |2 |[0, 65,535]|
+|long |4 |[-2,147,483,647, +2,147,483,647]|
+|unsigned long |4 |[0, 4,294,967,295]|
+|long long |8 |[-9,223,372,036,854,775,808, +9,223,372,036,854,775,807]|
+|unsigned long long |8 |[0, 18,446,744,073,709,551,615]|
+
+long long > long > int > short > char
+
+### 형변환
+
+어떤 데이터의 형을 변환하고싶다면 앞에 `(data type)`를 사용하면 된다.
+
+```c
+float res = ( float ) i / k;
+```
+
+### 반복문
+
+for loop의 형태가 꽤나 헷갈린다.
+
+```c
+for (i =0; i <=10; i=i +1){}
+```
+이런 형태이다.
+
+while의 형태는 별로 다르지 않다. 
+
+```c
+while (조건문) {}
+```
+
+do while loop도 자주 쓰이니 알아두자.
+
+```c
+int j = 0;
+do {
+    printf("j=%d\n", j++);
+} while (j < 10);
+```
+
+### String
+
+String은 Character의 배열이다. 이 경우, 배열의 마지막엔 항상 문장의 끝을 의미하는 "널 문자" `'\0'`이 들어가야 한다.
+
+
+```c
+#include <stdio.h>
+
+int main() {
+    char a[23] = {'P', 'o', 't', 't', 's', 'd', 'a', 'm', '\0'};
+    
+    printf("%s\n", a);    // 1. 문자열 전체 출력
+    printf("%c\n", a[0]); // 2. 첫 번째 문자 출력
+    printf("%d\n", a[0]); // 3. 첫 번째 문자의 ASCII 값 출력, 80
+    printf("%d\n", a[7]); // 4. 7번째 문자의 ASCII 값 (널 문자) 출력, 0
+
+    return 0;
+}
+```
+`%d`는 정수형을 의미하는 형식 지정자로써, 이것으로 호출하면 아스키값을 출력한다. 
+
+
+### Pointer
+
+매우 중요한 개념이고, 매우 헷갈리는 개념이다. 
+
+포인터는 메모리 주소를 저장하는 변수이다. 일반 변수는 값을 저장하지만, 포인터는 **값이 저장된 메모리 주소**를 저장한다. 
+
+포인터는 다음과 같이 선언될 수 있다.
+
+```c
+int i = 99;
+int *pointer_i = &i;
+```
+이때, `*pointer_i`는 포인터로써 선언이 되는데, 이 주소값을 주소연산자 `&`를 통해, `i`의 주소를 포인터에 할당해 주는 것이다. 
+
+포인터를 이용해 값을 참조할 수 있다.
+
+```c
+printf("i is %d, *pointer_i is %d\n", i, *pointer_i);
+```
+이때 `i`는 변수 i의 값을 가져와 99를 출력한다.
+
+`*pointer_i`는 해당 변수가 가리키는 주소에 있는 값을 가져와 출력한다. 따라서, 똑같이 99를 출력한다. 
+
+자! 이제 여기서 중요한 포인트이다. `*`연산자가 붙으면 그 주소의 값을 참조하는건데, 얘가 없으면 어떻게 될까?
+
+```c
+printf("%p, %p\n", &i, pointer_i);
+```
+먼저, `&i`는 주소연산자 `&`를 통해, 변수 i의 주소를 가져온다.
+
+그리고, `pointer_i`는 변수 i의 주소를 저장한 포인터이므로, 변수 i가 저장된 주소를 가져온다. 
+
+따라서, 두 값은 동일한 메모리 주소를 출력한다. (예: `0x7ffee6a09a8c`)
+
+## Function
+
+C 언어에서 함수는 다음과 같은 세 가지 구성 요소로 이루어져 있다:
+
+* 반환형 (Return Type): 함수가 반환하는 값의 데이터 타입.
+* 함수 이름 (Function Name): 함수를 호출할 때 사용하는 이름.
+* 매개변수 (Parameters): 함수가 입력받는 데이터(인자).
+* 함수 본체 (Function Body): 함수가 수행할 작업을 정의하는 코드.
+
+```c
+반환형 함수이름(매개변수 목록) {
+    // 함수 본체 (실제 코드 실행 부분)
+    return 반환값;  // 반환형이 void인 경우에는 return을 생략할 수 있음
+}
+```
+```c
+#include <stdio.h>
+
+// 함수 선언 (프로토타입)
+int add(int a, int b);
+
+// main 함수 (프로그램의 시작점)
+int main() {
+    int result = add(5, 3);  // add 함수 호출
+    printf("Result: %d\n", result);
+    return 0;
+}
+
+// 함수 정의
+int add(int a, int b) {
+    return a + b;  // a와 b를 더한 값을 반환
+}
+```
+
+### local vs global
+
+#### local
+
+local variable은 코드블록 내부에서 선언된 변수이다. 이 변수는 변수가 선언된 블록 내에서만 접근이 가능하다.
+
+로컬은 또한 선언된 함수가 호출될 때 생성되고, 함수가 종료되면 메모리에서 사라진다. 
+
+그러나, 이 로컬 변수는 자동으로 초기화 되지 않으므로, 반드시 명시적으로 초기화해야한다. 그렇지 않은 경우 garbage value가 들어갈 수 있다.
+
+```c
+#include <stdio.h>
+
+void myFunction() {
+    int localVar = 10;  // 지역 변수
+    printf("localVar: %d\n", localVar);  // 지역 변수를 사용할 수 있음
+}
+
+int main() {
+    myFunction();  // 함수 호출
+    // printf("%d", localVar);  // 오류! localVar는 myFunction() 내부에서만 접근 가능
+    return 0;
+}
+```
+
+#### global
+
+global variable은 모든 함수 외부에서 선언된 변수이다. 선언된 지점에서 프로그램 전체에서 접근할 수 있으며, 모두 공유되는 변수이다. 
+
+이는 프로그램이 시작될 때 생성되고, 프로그램이 종료될 때 까지 유지된다. 
+
+글로벌은 자동으로 초기화되며, 기본적으로 0으로 초기화된다.
+
+```c
+#include <stdio.h>
+
+int globalVar = 100;  // 전역 변수
+
+void myFunction() {
+    printf("globalVar in myFunction: %d\n", globalVar);  // 전역 변수 사용 가능
+}
+
+int main() {
+    printf("globalVar in main: %d\n", globalVar);  // 전역 변수 사용 가능
+    myFunction();  // 함수 호출
+    return 0;
+}
+```
+
+### static vs automatic
+
+`static` 키워드는 변수가 선언된 위치와 관계없이 변수의 생명 주기를 프로그램의 전체 실행 시간으로 확장시킨다. 즉, `static` 변수는 한 번 초기화되면 프로그램이 종료될 때까지 메모리에서 유지된다.
+
+`local static` 변수는 함수 내부에서 선언되어도 그 유효 범위는 해당 함수 내에만 한정된다. 하지만 해당 함수가 여러 번 호출되어도 초기화는 단 한 번만 이루어진다.
+
+`global static` 변수는 파일 내에서만 유효하며, 다른 파일에서 접근할 수 없다. 이를 통해 외부에서 접근할 수 없도록 파일 범위의 은닉성을 제공한다.
+
+`automatic` 은 디폴트 값이며, 기본적으로 local 변수이다. 함수나 블록이 호출되거나 실행될 때 자동으로 생성되고, 종료될 때 소멸된다.
+
+## Array and Pointers
+
+### Array
+
+모두 같은 데이터타입을 공유하는 storage locations의 모임이다. 
+
+```c
+int main(){
+    int a[10];
+    a[0] = 1;
+    printf("%d\n", a[0]);
+    return(0);
+}
+```
+요러면 1이 나오겠죠? 처음에 `a[10]`은 크기를 명시한 것이다. array는 처음 선언할 때 크기를 같이 선언해주어야 하고, 이는 변경될 수 없다. 
+
+```c
+#include <stdio.h>
+
+int main() {
+    int points[31], count;
+
+    // 1. 점수 입력
+    for(count = 0; count < 31; count++) {
+        printf("Enter smiley points for May %d: ", count + 1);
+        scanf("%d", &points[count]);
+    }
+
+    // 2. 점수 출력
+    for(count = 0; count < 31; count++) {
+        printf("Smiley points for May %d: %d\n", count + 1, points[count]);
+    }
+
+    return 0;
+}
+```
+
+이때, 중요한 부분이 `scanf("%d", &points[count]);` 이부분이다. 
+
+`&points[count]`는 `points` array에서 `count`번째 요소의 주소를 가리킨다. 즉, 입력된 point는 저부분에 저장이 되는 것이다. 
+
+또한 출력부분에서 `points[count]`는 `count`번째에 저장된 요소를 출력하라는 것이다. 
+
+#### Multidimensional arrays
+
+```c
+int main(){
+    int table[2][5] = {1,2,3,4,5,6,7,8,9,10};
+    printf("%d\n", table [1][2]); // 8
+    return(0);
+}
+```
+요롷게 표를 만들 수 있따.
+
+#### Pointers
+
+```c
+typename variablename = value ;
+typename * pointername ;
+pointername = & variablename ;
+```
+
+- `*`: indirection operator
+- `&`: address of
+
+변수의 값에는 어떻게 접근할까? 
+
+변수의 이름을 직접 호출하여, 값에 직접적으로 접근할 수 있다. 
+
+또는, `*pointername`를 통해 간접적으로 변수에 접근할 수 있다.
+
+포인터를 선언할 때 중요한 점은 `*`의 위치이다. 보통같으면 딱히 문제가 없는데, 한번에 여러개를 선언할때는 구분이 필요하다.
+
+```c
+int *p, i;
+int* p1, p2;
+```
+
+여기서보면, `i`는 일반 변수이다. 그러나, `p1`과 `p2`는 모두 포인터이다. 
+
+array의 사이즈를 보려면, 다음과 같이 사용할 수 있다.
+
+```c
+printf("Size of int:%zu\n",sizeof(int));
+```
+
+포인터를 통해 어떤 배열을 가리킬 수 있다. 
+
+```c
+#include <stdio.h>
+#define MAX 13
+
+int a[MAX] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};  // 크기가 13인 배열 초기화
+int *pointer_a, count;  // 정수형 포인터와 반복 제어 변수 선언
+
+int main() {
+    pointer_a = a;  // 포인터가 배열 a의 첫 번째 요소를 가리키도록 설정
+
+    printf("Index\tValue\tAddress\n");  // 헤더 출력
+
+    // 배열 요소와 그 주소를 출력하는 for 루프
+    for(count = 0; count < MAX; count++) {
+        printf("%d\t%d\t%p\n", count, *pointer_a++, pointer_a);
+    }
+
+    return 0;
+}
+```
+
+`pointer_a`: 정수형 포인터로, 배열 a의 첫 번째 요소를 가리키는 데 사용된다.
+
+배열 `a`의 이름은 배열의 첫 번째 요소의 주소를 가리키므로, `pointer_a`에 배열 `a`의 시작 주소가 할당된다.
+따라서, `pointer_a`는 배열의 첫 번째 요소를 가리키게 된다.
+
+```c
+printf("%d\t%d\t%p\n", count, *pointer_a++, pointer_a);
+```
+여기에서, `*pointer_a++`는 `pointer_a`가 가리키는 값을 출력한다. 이 표현식은 후위 증가 연산자`(++)`를 사용하여 먼저 현재 주소가 가리키는 값을 출력하고, 그 후 포인터를 다음 요소로 이동시킨다. 즉, 출력 후 `pointer_a`가 다음 배열 요소로 이동한다.
+
+`pointer_a`: 배열의 현재 주소를 출력한다. 포인터가 증가되었기 때문에, 다음 요소의 주소가 출력된다.
+
+```
+Index   Value   Address
+0       1       0x7ffeed5bc020
+1       2       0x7ffeed5bc024
+2       3       0x7ffeed5bc028
+3       4       0x7ffeed5bc02c
+4       5       0x7ffeed5bc030
+5       6       0x7ffeed5bc034
+...
+12      13      0x7ffeed5bc04c
+```
+
+`pointer_a++`는 4바이트씩 증가한다. 이는 int형이 4바이트를 차지하기 때문에, 다음 메모리 주소는 4바이트 뒤로 이동하게 된다. 즉, 메모리 주소 간의 차이는 `sizeof(int)`(4바이트)입니다.
+
+`%p`는 메모리 주소를 출력하는데 사용되며, 각 배열 요소의 주소는 4바이트씩 증가한다.
+
+
+
+## Pointers, Trees, Linked Lists
+
+```c
+void fun(int array[]);
+int main() {
+    int i, a[5] = {1, 2, 3, 4, 5};
+    for(i = 0; i < sizeof(a)/sizeof(int); i++) {
+        printf("Entry %d is %d.\n", i+1, a[i]);
+    }
+    fun(a);
+    return 0;
+}
+void fun(int array[]) {
+    printf("sizeof(array)/sizeof(int)=%d\n", sizeof(array)/sizeof(int));
+}
+```
+for문: `sizeof(a)/sizeof(int)`는 배열 a의 요소 개수를 구하는데 사용된다. 여기서 `sizeof(a)`는 배열의 전체 크기를 바이트 단위로 나타내고, `sizeof(int)`는 배열의 각 요소의 크기를 나타낸다. 이 결과를 통해 배열의 길이를 구할 수 있다.
+
+따라서 `sizeof(array)/sizeof(int)`는 항상 8/4 = 2를 반환하게 된다.
+
+#### Pointer arithmetics
+
+```c
+int main() {
+    int i, a[5] = {2, 4, 6, 8, 10};
+for(i = 0; i < 5; i++) {
+    printf("a[%d]=%d\n", i, *(a+i));
+}
+return(0);
+}
+```
+`*(a+i)`는  배열의 포인터를 사용하여 인덱스 i에 해당하는 값을 출력한다.
+
+  * `a`는 배열의 시작 주소를 나타내는 포인터이다.
+  * `*(a+i)`는 포인터 산술을 이용하여 배열의 i번째 요소에 접근한다. 여기서 `a + i`는 배열의 `i`번째 요소의 주소를 나타내며, `*` 연산자는 그 주소에 있는 값을 가져온다.
+  
+배열 a의 주소는 변경되지 않으며, 포인터 산술을 통해 각 요소에 접근하는 방식이 동작한다.
+
+
+```
+a[0]=2
+a[1]=4
+a[2]=6
+a[3]=8
+a[4]=10
+```
+
+#### melloc()
+
+`melloc`함수는 동적 메모리 할당을 가능하게한다. `stdlib.h` 헤더파일에 포함되어있다.
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    char *string; // 문자열을 가리키는 포인터를 선언
+    string = (char*) malloc(96); // 96바이트의 메모리를 동적으로 할당. 
+                                 // 이는 95개의 문자와 문자열 끝에 오는 null 문자(\0)를 포함하기 위한 메모리 공간
+
+    int count;
+    char *p = string;
+    for(count = 32; count < 126; count++) {
+        *p++ = count;
+    }
+    *p++ = '\0';
+
+    puts(string);
+    printf("%s\n", string);
+    free(string); // 할당된 메모리 해제
+
+    return(0);
+}
+```
+`(char*)`는 `malloc()`의 반환값을 `char` 포인터로 형변환한다. 
+
+#### struct name{}
+
+struct는 C와 C++에서 구조체를 정의하기 위한 키워드다. 구조체는 서로 다른 데이터 타입을 하나의 복합 데이터 타입으로 묶을 수 있는 방법을 제공한다. struct를 사용하면 여러 변수를 하나의 이름 아래 그룹화하여 관리할 수 있다.
+
+선언은 다음과 같이 한다.
+```c
+struct name {
+    char first[20];
+    char last[20];
+    int age;
+};
+```
+
+이렇게 구조체를 선언해 놓으면, 아래와 같이 자료형처럼 사용할 수 있다.
+
+```c
+struct name person1 = {"John", "Doe", 30};
+```
+
+또한, `person.last`와 같은 방법으로 해당 변수에 접근할 수 있다. 
+
+```c
+struct student{
+    char name[23];
+    int age;
+}
+
+typedef struct student student;
+```
+요런식으로 원래 `struct student`를 사용해서 선언해야 했던 저 구조체를 `student`하나만으로 선언할 수 있다. 
+
+#### typedef
+
+typedef는 C와 C++에서 데이터 타입에 새로운 이름을 부여하는 데 사용되는 키워드다. 이를 통해 기존 데이터 타입을 더 읽기 쉽거나 편리하게 사용하기 위한 별칭(alias)을 정의할 수 있다.
 
 # Lecture 1
 
@@ -2013,9 +2543,9 @@ World!
 
 C++17에서 도입된 Filesystem 라이브러리는 Boost 라이브러리에서 가져온 핵심 부분들을 포함한다. 이 라이브러리는 파일 및 디렉터리 경로와 관련된 작업을 수행하며, 다음과 같은 주요 구성 요소들이 있다.
 
-* **path object**: 파일 또는 디렉터리의 경로를 나타내는 객체입니다.
-* **directory_entry**: 디렉터리의 각 항목(파일 또는 하위 디렉터리)에 대한 정보를 제공하는 객체입니다.
-* **directory iterators**: 디렉터리 내의 파일 및 디렉터리를 반복적으로 탐색할 수 있는 반복자입니다.
+* **path object**: 파일 또는 디렉터리의 경로를 나타내는 객체이다.
+* **directory_entry**: 디렉터리의 각 항목(파일 또는 하위 디렉터리)에 대한 정보를 제공하는 객체이다.
+* **directory iterators**: 디렉터리 내의 파일 및 디렉터리를 반복적으로 탐색할 수 있는 반복자이다.
 * **supportive functions**: 경로에 관한 정보, 파일 조작(복사, 이동, 생성 등), 파일 속성, 시간, 크기 등 다양한 작업을 수행할 수 있는 보조 함수들을 포함합니다.
 
 예시 코드를 보자.
@@ -3018,7 +3548,7 @@ Regex를 사용하는데 유용한 functions들이 있다. 이 형태는 파이�
      ```
 
 5. **`std::regex_constants::match_flag_type`**
-   - **설명**: `std::regex_match`와 `std::regex_search` 함수의 매치 동작을 제어하기 위한 상수 타입입니다.
+   - **설명**: `std::regex_match`와 `std::regex_search` 함수의 매치 동작을 제어하기 위한 상수 타입이다.
    - **사용 예시**:
      ```cpp
      std::string str = "Hello World";
@@ -3029,7 +3559,7 @@ Regex를 사용하는데 유용한 functions들이 있다. 이 형태는 파이�
      ```
 
 6. **`std::smatch`**
-   - **설명**: `std::regex_match` 또는 `std::regex_search`에서 매치된 결과를 저장하는 클래스입니다.
+   - **설명**: `std::regex_match` 또는 `std::regex_search`에서 매치된 결과를 저장하는 클래스이다.
    - **사용 예시**:
      ```cpp
      std::string str = "John: 555-1234";
@@ -3293,7 +3823,7 @@ int main(int argc, char *argv[]) {
 
 #### Popl - Program Options Parser Library
 
-popl은 C++ 프로그램의 명령줄 인수를 처리하기 위한 라이브러리입니다. 이 라이브러리는 명령줄 인수를 파싱하고, 각 인수의 값을 쉽게 접근하고 사용할 수 있는 기능을 제공합니다. 주로 사용되는 기능은 다음과 같습니다:
+popl은 C++ 프로그램의 명령줄 인수를 처리하기 위한 라이브러리이다. 이 라이브러리는 명령줄 인수를 파싱하고, 각 인수의 값을 쉽게 접근하고 사용할 수 있는 기능을 제공합니다. 주로 사용되는 기능은 다음과 같습니다:
 
 + 옵션 정의: popl을 사용하여 명령줄 옵션을 정의하고 설명을 추가할 수 있습니다. 예를 들어, 옵션의 이름, 단축 이름, 설명 등을 설정할 수 있습니다.
 
@@ -3418,7 +3948,7 @@ int main(int argc, char** argv) {
 
 #### Structopt
 
-structopt은 C++ 프로그램에서 명령줄 인수를 처리하기 위한 간단하고 강력한 라이브러리입니다. 주요 특징과 사용 방법을 설명드리겠습니다.
+structopt은 C++ 프로그램에서 명령줄 인수를 처리하기 위한 간단하고 강력한 라이브러리이다. 주요 특징과 사용 방법을 설명드리겠습니다.
 
 - 간편한 정의: 구조체(struct)를 사용하여 옵션들을 정의하고, 이를 통해 명령줄 인수를 파싱합니다.
 
@@ -3818,11 +4348,11 @@ int main () {
 
 * **네임스페이스 별칭**: 네임스페이스의 긴 이름을 짧게 줄여서 사용할 수 있습니다. 이는 코드를 읽기 쉽게 만들어주며, 복잡한 구조의 네임스페이스를 간단하게 다룰 수 있습니다.
 
-* **대규모 프로젝트에서의 권장**: 작은 프로젝트보다는 대규모 프로젝트에서 네임스페이스 사용이 권장됩니다. 코드의 구조화와 관리가 더욱 중요해지기 때문입니다.
+* **대규모 프로젝트에서의 권장**: 작은 프로젝트보다는 대규모 프로젝트에서 네임스페이스 사용이 권장됩니다. 코드의 구조화와 관리가 더욱 중요해지기 때문이다.
 
 * **함수 선언과 정의**: 네임스페이스 안에서 함수를 선언하고 외부에서 정의할 수 있습니다. 이는 네임스페이스 안에서의 인터페이스 분리와 구현의 분리를 가능하게 합니다.
 
-* **네임스페이스의 파일 구조**: 네임스페이스가 여러 파일로 구성되어 있는 경우, 해당 네임스페이스와 동일한 이름의 폴더 안에 네임스페이스 파일들을 위치시키는 것이 일반적입니다.
+* **네임스페이스의 파일 구조**: 네임스페이스가 여러 파일로 구성되어 있는 경우, 해당 네임스페이스와 동일한 이름의 폴더 안에 네임스페이스 파일들을 위치시키는 것이 일반적이다.
 
 * **C++ 네임스페이스의 편리함**: C++의 네임스페이스는 R과 같은 다른 언어의 네임스페이스보다 훨씬 편리합니다. 예를 들어, 모든 함수의 자동 import가 없으며, 네임스페이스의 생성과 중첩이 더 간단합니다.
 
@@ -3934,7 +4464,7 @@ STL(Standard Template Library)은 C++ 프로그래밍 언어를 위한 표준 �
   * 컨테이너는 데이터를 저장하고 관리하는 객체들을 말합니다. STL은 다양한 종류의 컨테이너를 제공하는데, 배열(array), 리스트(list), 벡터(vector), 맵(map), 세트(set) 등이 있습니다. 각 컨테이너는 특정 데이터 구조를 구현하여 데이터를 효율적으로 저장하고 접근할 수 있게 합니다.
 
   * `std::vector`: 동적 배열을 제공하며, 원소의 끝에 삽입 및 삭제가 빠르게 가능합니다.
-  * `std::deque`: 덱(Deque)은 double-ended queue의 약어로, 양 끝에서 원소의 추가와 제거가 O(1) 시간에 가능한 자료구조입니다.
+  * `std::deque`: 덱(Deque)은 double-ended queue의 약어로, 양 끝에서 원소의 추가와 제거가 O(1) 시간에 가능한 자료구조이다.
   * `std::list`: 이중 연결 리스트를 구현한 자료구조로, 임의 위치에서의 원소 삽입과 삭제가 O(1) 시간에 가능합니다.
   * `std::set`: 균형 이진 검색 트리로 구현된 자료구조로, 중복을 허용하지 않고 원소를 정렬된 상태로 유지합니다.
   * `std::map`: 키와 값을 한 쌍으로 저장하는 자료구조로, 키를 기준으로 정렬되어 있으며 중복을 허용하지 않습니다.
@@ -3954,7 +4484,7 @@ STL(Standard Template Library)은 C++ 프로그래밍 언어를 위한 표준 �
 
 * **std::set**:
 
-  * `std::set`은 정렬된 유일한 값을 갖는 컨테이너입니다. 중복된 값이 삽입되지 않으며, 항목들이 자동으로 정렬됩니다.
+  * `std::set`은 정렬된 유일한 값을 갖는 컨테이너이다. 중복된 값이 삽입되지 않으며, 항목들이 자동으로 정렬됩니다.
   * 여러 항목을 한 번에 삽입할 때 `std::set`이 더 빠릅니다.
   * 항목이 정렬된 순서로 유지되어야 할 경우에 사용됩니다.
   * 성능이 매우 중요한 경우에 사용될 수 있습니다.
@@ -3962,10 +4492,10 @@ STL(Standard Template Library)은 C++ 프로그래밍 언어를 위한 표준 �
 
   * `std::vector`는 동적 배열을 나타내며, 요소를 순차적으로 저장합니다. 크기가 동적으로 조절되며, 중간 삽입 및 삭제가 비효율적일 수 있습니다.
   * 자료를 순차적으로 접근해야 할 때 유용하며, 순서가 중요한 경우에도 사용될 수 있습니다.
-  * 많은 경우에서 기본적으로 사용되는 컨테이너입니다.
+  * 많은 경우에서 기본적으로 사용되는 컨테이너이다.
 * **std::map**:
 
-  * `std::map`은 key-value 쌍으로 데이터를 저장하는 연관 컨테이너입니다. key는 유일해야 하며, 자동으로 정렬됩니다.
+  * `std::map`은 key-value 쌍으로 데이터를 저장하는 연관 컨테이너이다. key는 유일해야 하며, 자동으로 정렬됩니다.
   * 데이터를 검색할 때 효율적이며, key에 따라 자동으로 정렬되어야 할 경우에 사용됩니다.
   * `std::multimap`은 하나의 key에 여러 개의 값이 매핑될 수 있습니다. 이는 `std::map`에 `std::vector`를 값으로 사용하여 구현할 수 있습니다.
 * 추가 설명:
@@ -3981,10 +4511,10 @@ STL(Standard Template Library)은 C++ 프로그래밍 언어를 위한 표준 �
 * **std::tuple**:
 
   * `std::tuple`은 C++ 표준 라이브러리에서 제공하는 클래스로, 다양한 타입의 여러 값을 하나의 단위로 저장할 수 있습니다.
-  * 예를 들어, `std::tuple<int, std::string, double>`은 정수, 문자열, 실수 세 가지 타입의 값을 저장할 수 있는 구조체입니다.
+  * 예를 들어, `std::tuple<int, std::string, double>`은 정수, 문자열, 실수 세 가지 타입의 값을 저장할 수 있는 구조체이다.
   * `std::make_tuple` 함수를 사용하여 tuple을 생성할 수 있습니다. 이 함수는 전달된 값들로부터 tuple을 만들어 반환합니다.
 * **std::pair**:
 
-  * `std::pair`는 두 개의 값, 동일한 타입 또는 다른 타입의 두 값을 저장할 수 있는 클래스입니다.
+  * `std::pair`는 두 개의 값, 동일한 타입 또는 다른 타입의 두 값을 저장할 수 있는 클래스이다.
   * 예를 들어, `std::pair<int, std::string>`은 정수와 문자열 한 쌍을 저장할 수 있습니다.
   * `std::make_pair` 함수를 사용하여 pair를 생성할 수 있습니다. 이 함수는 두 개의 값으로부터 pair를 만들어 반환합니다.
