@@ -104,6 +104,10 @@
   - [Standard Template Library (STL)](#standard-template-library-stl)
     - [Set vs Vector vs Map](#set-vs-vector-vs-map)
     - [Pair and Tuple](#pair-and-tuple)
+- [Lecture 6](#lecture-6)
+  - [Exception](#exception)
+    - [Dynamic memory](#dynamic-memory)
+    - [Smart Pointer](#smart-pointer)
 
 # C - Boring part
 
@@ -4518,3 +4522,161 @@ STL(Standard Template Library)은 C++ 프로그래밍 언어를 위한 표준 �
   * `std::pair`는 두 개의 값, 동일한 타입 또는 다른 타입의 두 값을 저장할 수 있는 클래스이다.
   * 예를 들어, `std::pair<int, std::string>`은 정수와 문자열 한 쌍을 저장할 수 있습니다.
   * `std::make_pair` 함수를 사용하여 pair를 생성할 수 있습니다. 이 함수는 두 개의 값으로부터 pair를 만들어 반환합니다.
+
+
+# Lecture 6
+
+## Exception
+
+C++에서 **예외 처리(Exception Handling)**는 프로그램 실행 중에 발생할 수 있는 오류나 예외적인 상황을 처리하는 메커니즘입니다. 예외 처리는 프로그램의 흐름을 제어하면서도 예기치 못한 오류를 처리하고, 프로그램이 갑작스럽게 종료되지 않도록 돕습니다.
+
+C++에서는 예외 처리를 위해 `try`, `catch`, `throw` 키워드를 사용합니다.
+
+기본 개념
+* `throw`: 예외를 던질 때 사용됩니다. 프로그램에서 특정 조건이 발생하면 `throw` 키워드를 통해 예외를 발생시킬 수 있습니다. 예외가 발생하면 프로그램의 제어가 즉시 `throw` 구문으로부터 멀어지고, 이를 처리할 수 있는 적절한 `catch` 블록을 찾습니다.
+
+* `try`: 예외가 발생할 수 있는 코드 블록을 감싸는 데 사용됩니다. try 블록 내에서 발생한 예외는 `catch` 블록에서 처리됩니다.
+
+* `catch`: 예외를 처리하는 코드 블록입니다. `catch` 블록은 `throw`된 예외 객체를 받아 적절히 처리할 수 있습니다. 하나의 try 블록에 대해 여러 개의 `catch` 블록이 있을 수 있으며, 각 `catch` 블록은 서로 다른 타입의 예외를 처리합니다.
+
+다음은 기본적인 예외 처리 구조입니다.
+
+```c
+#include <iostream>
+
+int main() {
+    try {
+        // 예외가 발생할 수 있는 코드
+        throw 20;  // int 타입 예외 발생
+    }
+    catch (int e) {
+        // 예외 처리
+        std::cout << "Caught an exception: " << e << std::endl;
+    }
+
+    return 0;
+}
+```
+위 코드에서 `throw 20;`은 정수 예외를 발생시키고, `catch (int e)` 블록에서 이를 받아 처리합니다. 예외가 발생하면 `try` 블록 내의 나머지 코드는 실행되지 않고, 해당 예외 타입을 처리할 수 있는 `catch` 블록으로 제어가 넘어갑니다.
+
+### Dynamic memory
+
+스택과 힙(Stack and Heap):
+C++ 프로그램에서 메모리는 두 부분으로 나뉩니다:
+
+* 스택: 함수 내에서 선언된 변수들은 스택 메모리를 사용합니다.
+* 힙: 프로그램의 사용되지 않은 메모리 공간으로, 프로그램이 실행될 때 동적으로 메모리를 할당하는 데 사용됩니다.
+
+많은 경우, 변수에 특정 정보를 저장하기 위해 얼마나 많은 메모리가 필요한지 미리 알 수 없으며, 필요한 메모리 크기는 런타임에 결정됩니다.
+
+1. 스택 메모리
+
+   * **스택(stack)**은 프로그램이 실행될 때, 특히 함수 호출 시 메모리를 자동으로 관리하는 영역입니다. 로컬 변수나 함수 매개변수는 스택에 저장됩니다.
+   * LIFO(Last In First Out) 방식으로 관리되며, 함수가 종료되면 스택 메모리에 할당된 변수가 자동으로 해제됩니다.
+   * 장점은 할당과 해제가 매우 빠르지만, 메모리 크기가 제한적입니다.
+
+2. 힙 메모리
+
+   * **힙(heap)**은 동적 메모리 할당이 이루어지는 공간으로, 프로그램이 실행되는 동안 개발자가 직접 할당(new)하고 해제(delete)할 수 있습니다.
+   * 스택과 달리 힙 메모리는 런타임에 크기를 결정할 수 있어, 프로그램의 유연성을 제공합니다.
+   * 그러나 힙 메모리는 개발자가 직접 메모리 해제를 관리해야 하며, 이를 관리하지 않으면 **메모리 누수(memory leak)**가 발생할 수 있습니다.
+
+3. 동적 메모리의 필요성
+
+   * 프로그램이 실행되는 동안 어떤 데이터를 처리할지 미리 알 수 없는 경우, 특히 대규모 데이터나 다양한 크기의 데이터를 처리할 때 동적 메모리가 유용합니다.
+   * 예를 들어, 사용자가 입력하는 데이터의 양에 따라 메모리를 할당하거나, 프로그램이 수행 중에 생성되는 객체의 수를 조정할 수 있습니다.
+
+
+단일 객체 할당
+
+```c
+int* ptr = new int;  // 정수형 메모리 동적 할당
+*ptr = 10;
+delete ptr;  // 메모리 해제
+```
+
+배열 할당
+```c
+int* arr = new int[5];  // 정수형 배열 동적 할당
+for (int i = 0; i < 5; ++i) {
+    arr[i] = i + 1;  // 배열 초기화
+}
+delete[] arr;  // 배열 메모리 해제
+```
+
+동적 메모리를 사용하면 메모리 해제를 반드시 신경 써야 합니다. 만약 동적으로 할당한 메모리를 해제하지 않으면, 메모리 누수가 발생하여 프로그램 성능이 저하되거나 충돌할 수 있습니다. 이를 방지하기 위해, C++11부터는 스마트 포인터(std::unique_ptr, std::shared_ptr)가 도입되어 메모리 관리를 자동화합니다.
+
+### Smart Pointer
+
+
+**스마트 포인터(Smart Pointer)**는 C++에서 메모리 관리를 자동화하는 데 사용되는 객체입니다. 스마트 포인터는 동적 할당된 메모리의 수명을 자동으로 관리하며, 메모리 누수(memory leak)를 방지할 수 있도록 설계되었습니다. 스마트 포인터는 RAII(Resource Acquisition Is Initialization) 원칙을 따르며, 포인터가 더 이상 필요하지 않을 때 자동으로 메모리를 해제합니다.
+
+C++에서 가장 널리 사용되는 스마트 포인터들은 `std::unique_ptr`, `std::shared_ptr`, `std::weak_ptr`입니다. 이들은 모두 **표준 라이브러리 헤더 <memory>**에 정의되어 있습니다.
+
+1. `std::unique_ptr`
+   * 소유권이 유일한 스마트 포인터입니다.
+   * 하나의 객체에 대해 단 하나의 `std::unique_ptr`만 소유권을 가질 수 있습니다. 즉, 복사 불가이며, 이동만 가능합니다.
+   * 메모리 해제는 포인터가 범위를 벗어나거나 명시적으로 해제될 때 이루어집니다.
+
+```c
+#include <iostream>
+#include <memory>
+
+class MyClass {
+public:
+    MyClass() { std::cout << "MyClass created" << std::endl; }
+    ~MyClass() { std::cout << "MyClass destroyed" << std::endl; }
+};
+
+int main() {
+    std::unique_ptr<MyClass> ptr1 = std::make_unique<MyClass>();  // 객체 생성 및 관리 시작
+    // std::unique_ptr<MyClass> ptr2 = ptr1;  // 복사는 불가능 (컴파일 에러)
+    
+    std::unique_ptr<MyClass> ptr2 = std::move(ptr1);  // 이동은 가능
+    // ptr1은 더 이상 객체에 대한 소유권을 가지지 않음
+}
+```
+
+`std::move`를 통해 소유권을 다른 `unique_ptr`로 이전할 수 있습니다. 리소스의 단일 소유권이 명확할 때 사용됩니다. 예를 들어, 객체를 함수로 전달할 때 소유권을 넘겨줄 필요가 있을 때 유용합니다.
+
+1. `std::shared_ptr`
+   * 참조 횟수 기반으로 메모리를 관리하는 스마트 포인터입니다.
+   * 여러 개의 `std::shared_ptr`가 같은 객체를 참조할 수 있으며, **참조 카운트(reference count)**가 관리됩니다.
+   * 마지막 `std::shared_ptr`가 범위를 벗어나거나 해제되면 객체가 삭제됩니다.
+
+```c
+#include <iostream>
+#include <memory>
+
+class MyClass {
+public:
+    MyClass() { std::cout << "MyClass created" << std::endl; }
+    ~MyClass() { std::cout << "MyClass destroyed" << std::endl; }
+};
+
+int main() {
+    std::shared_ptr<MyClass> ptr1 = std::make_shared<MyClass>();  // 객체 생성 및 참조 시작
+    {
+        std::shared_ptr<MyClass> ptr2 = ptr1;  // 참조 카운트 증가
+        std::cout << "Reference count: " << ptr1.use_count() << std::endl;  // 2
+    }  // ptr2가 범위를 벗어나면서 참조 카운트 감소
+    std::cout << "Reference count: " << ptr1.use_count() << std::endl;  // 1
+}  // ptr1이 범위를 벗어나면서 객체 소멸
+```
+
+`shared_ptr`는 참조 카운트를 내부적으로 관리합니다. 복사할 때마다 참조 카운트가 증가하고, 각 shared_ptr가 소멸될 때 참조 카운트가 감소합니다. 참조 카운트가 0이 되면 객체가 삭제됩니다. 여러 곳에서 객체를 공유하고, 소유권을 명확하게 정의하지 않고 싶을 때 유용합니다.
+
+
+스마트 포인터 요약
+
+* 함수 인자에서는 (const) 참조를 선호하세요!
+* vector나 map 같은 컨테이너를 선호하세요!
+* 성능 문제가 발생할 때만 스마트 포인터를 사용하세요.
+* new와 delete 대신 스마트 포인터를 사용하세요.
+* 외부의 원시 포인터를 다루거나 직접 컨테이너를 생성할 때만 new와 delete를 사용하세요.
+* 참고 링크: https://www.modernescpp.com/index.php/c-core-guidelines-rules-to-smart-pointers
+* R.20: 소유권을 표현할 때 unique_ptr 또는 shared_ptr을 사용하세요.
+* R.21: 소유권 공유가 필요하지 않다면 shared_ptr보다 unique_ptr을 선호하세요.
+* R.22: shared_ptr을 만들 때는 make_shared()를 사용하세요.
+* R.23: unique_ptr을 만들 때는 make_unique()를 사용하세요.
+* 스니펫을 만드세요.
